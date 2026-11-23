@@ -1,25 +1,27 @@
 import React, { useState, useMemo } from 'react';
-import { 
-  MapPin, 
-  Search, 
-  ChevronRight, 
-  ArrowLeft, 
-  Building2, 
-  Home, 
-  Layers, 
-  Copy, 
-  Check, 
-  Filter, 
-  ChevronDown, 
-  ChevronUp, 
-  X
+import {
+  MapPin,
+  Search,
+  ChevronRight,
+  ArrowLeft,
+  Building2,
+  Home,
+  Layers,
+  Hash,
+  Copy,
+  Check,
+  Filter,
+  ChevronDown,
+  ChevronUp,
+  X,
+  FileSpreadsheet
 } from 'lucide-react';
 import { MASTER_WILAYAH_SAMBAS, STATISTIK_WILAYAH_SAMBAS } from '../lib/wilayahSambasData';
 
 export default function MasterWilayahPage() {
   // State navigasi: null = Tampilan Utama (Kecamatan), string = Kode Kecamatan yang dipilih
   const [selectedKecKode, setSelectedKecKode] = useState(null);
-  
+
   // State pencarian di halaman utama (Kecamatan)
   const [searchKec, setSearchKec] = useState('');
   const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'table'
@@ -34,7 +36,7 @@ export default function MasterWilayahPage() {
   const filteredKecamatan = useMemo(() => {
     if (!searchKec.trim()) return MASTER_WILAYAH_SAMBAS;
     const q = searchKec.toLowerCase().trim();
-    return MASTER_WILAYAH_SAMBAS.filter(k => 
+    return MASTER_WILAYAH_SAMBAS.filter(k =>
       k.nama_kec.toLowerCase().includes(q) ||
       k.kode_kec.includes(q) ||
       k.kode_full_kec.includes(q) ||
@@ -51,7 +53,7 @@ export default function MasterWilayahPage() {
   // Filter Desa & SLS di Halaman Detail Kecamatan
   const filteredDesaList = useMemo(() => {
     if (!currentKecamatan) return [];
-    
+
     let desas = currentKecamatan.desa;
     if (filterDesaKode !== 'ALL') {
       desas = desas.filter(d => d.kode_desa === filterDesaKode);
@@ -63,8 +65,8 @@ export default function MasterWilayahPage() {
     return desas
       .map(d => {
         const matchesDesa = d.nama_desa.toLowerCase().includes(q) || d.kode_desa.includes(q);
-        const matchedSls = d.sls.filter(s => 
-          s.nama_sls.toLowerCase().includes(q) || 
+        const matchedSls = d.sls.filter(s =>
+          s.nama_sls.toLowerCase().includes(q) ||
           s.kode_sls.includes(q) ||
           s.kode_full_sls.includes(q)
         );
@@ -111,7 +113,7 @@ export default function MasterWilayahPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-purple-100">
           <div>
             <div className="flex items-center gap-2 text-xs font-semibold text-purple-700 mb-1">
-              <button 
+              <button
                 onClick={() => { setSelectedKecKode(null); setSearchDetail(''); setFilterDesaKode('ALL'); }}
                 className="hover:underline flex items-center gap-1 text-slate-500 hover:text-purple-700 transition"
               >
@@ -204,7 +206,7 @@ export default function MasterWilayahPage() {
                 className="w-full pl-9 pr-4 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition"
               />
               {searchDetail && (
-                <button 
+                <button
                   onClick={() => setSearchDetail('')}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                 >
@@ -263,14 +265,13 @@ export default function MasterWilayahPage() {
               const isExpanded = expandedDesa[desa.kode_desa] ?? (filteredDesaList.length === 1 || Boolean(searchDetail.trim()));
 
               return (
-                <div 
-                  key={desa.kode_desa} 
-                  className={`bg-white rounded-2xl border transition overflow-hidden shadow-2xs ${
-                    isExpanded ? 'border-purple-300 ring-2 ring-purple-500/10' : 'border-purple-100 hover:border-purple-200'
-                  }`}
+                <div
+                  key={desa.kode_desa}
+                  className={`bg-white rounded-2xl border transition overflow-hidden shadow-2xs ${isExpanded ? 'border-purple-300 ring-2 ring-purple-500/10' : 'border-purple-100 hover:border-purple-200'
+                    }`}
                 >
                   {/* Desa Header Bar */}
-                  <div 
+                  <div
                     onClick={() => toggleExpandDesa(desa.kode_desa)}
                     className="p-3.5 sm:p-4 flex items-center justify-between cursor-pointer bg-gradient-to-r from-purple-50/50 via-white to-white hover:from-purple-50 transition"
                   >
@@ -281,11 +282,10 @@ export default function MasterWilayahPage() {
                       <div>
                         <div className="flex items-center gap-2 flex-wrap">
                           <h3 className="font-extrabold text-sm text-slate-900">{desa.nama_desa}</h3>
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                            desa.jenis === 'Kelurahan' 
-                              ? 'bg-amber-100 text-amber-800 border border-amber-200' 
-                              : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                          }`}>
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${desa.jenis === 'Kelurahan'
+                            ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                            : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                            }`}>
                             {desa.jenis}
                           </span>
                           <span className="font-mono text-[11px] font-semibold text-purple-700 bg-purple-100/70 px-2 py-0.5 rounded-md border border-purple-200">
@@ -377,11 +377,10 @@ export default function MasterWilayahPage() {
                                   <td className="py-2.5 px-2.5 text-center">
                                     <button
                                       onClick={() => handleCopy(numericFull)}
-                                      className={`p-1.5 rounded-lg border transition ${
-                                        isCopied 
-                                          ? 'bg-emerald-50 border-emerald-300 text-emerald-700' 
-                                          : 'bg-white border-slate-200 text-slate-500 hover:text-purple-700 hover:border-purple-300'
-                                      }`}
+                                      className={`p-1.5 rounded-lg border transition ${isCopied
+                                        ? 'bg-emerald-50 border-emerald-300 text-emerald-700'
+                                        : 'bg-white border-slate-200 text-slate-500 hover:text-purple-700 hover:border-purple-300'
+                                        }`}
                                       title="Salin Kode BPS Lengkap"
                                     >
                                       {isCopied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
@@ -537,7 +536,7 @@ export default function MasterWilayahPage() {
             className="w-full pl-9 pr-4 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-600 transition"
           />
           {searchKec && (
-            <button 
+            <button
               onClick={() => setSearchKec('')}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
             >
@@ -554,21 +553,19 @@ export default function MasterWilayahPage() {
           <div className="flex items-center p-0.5 bg-slate-100 rounded-xl border border-slate-200">
             <button
               onClick={() => setViewMode('grid')}
-              className={`px-3 py-1 text-xs font-bold rounded-lg transition ${
-                viewMode === 'grid' 
-                  ? 'bg-white text-purple-700 shadow-2xs' 
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
+              className={`px-3 py-1 text-xs font-bold rounded-lg transition ${viewMode === 'grid'
+                ? 'bg-white text-purple-700 shadow-2xs'
+                : 'text-slate-600 hover:text-slate-900'
+                }`}
             >
               Grid Kartu
             </button>
             <button
               onClick={() => setViewMode('table')}
-              className={`px-3 py-1 text-xs font-bold rounded-lg transition ${
-                viewMode === 'table' 
-                  ? 'bg-white text-purple-700 shadow-2xs' 
-                  : 'text-slate-600 hover:text-slate-900'
-              }`}
+              className={`px-3 py-1 text-xs font-bold rounded-lg transition ${viewMode === 'table'
+                ? 'bg-white text-purple-700 shadow-2xs'
+                : 'text-slate-600 hover:text-slate-900'
+                }`}
             >
               Tabel
             </button>
@@ -648,7 +645,7 @@ export default function MasterWilayahPage() {
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {filteredKecamatan.map((kec, idx) => (
-                  <tr 
+                  <tr
                     key={kec.kode_kec}
                     onClick={() => setSelectedKecKode(kec.kode_kec)}
                     className="hover:bg-purple-50/50 cursor-pointer transition"
