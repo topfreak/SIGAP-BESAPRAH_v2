@@ -88,7 +88,7 @@ export default function Topbar() {
                 </span>
               </div>
               <div className="text-[10px] text-slate-500 truncate max-w-[160px]">
-                {currentUser?.jabatan}
+                {currentUser?.role === 'superadmin' ? 'Administrator Sistem' : (currentUser?.jabatan || '-')}
               </div>
             </div>
             <ChevronDown className="w-3.5 h-3.5 text-purple-400" />
@@ -108,9 +108,15 @@ export default function Topbar() {
                   <span className="text-[10px] font-mono bg-purple-100 text-purple-900 px-1.5 py-0.2 rounded font-semibold">
                     @{currentUser?.username}
                   </span>
-                  <span className="text-[10px] text-slate-400 font-mono">
-                    NIP: {currentUser?.nip_baru}
-                  </span>
+                  {currentUser?.role !== 'superadmin' && currentUser?.nip_baru && currentUser?.nip_baru !== '-' ? (
+                    <span className="text-[10px] text-slate-400 font-mono">
+                      NIP: {currentUser?.nip_baru}
+                    </span>
+                  ) : currentUser?.role === 'superadmin' ? (
+                    <span className="text-[10px] text-purple-700 font-semibold">
+                      Administrator Sistem
+                    </span>
+                  ) : null}
                 </div>
               </div>
 

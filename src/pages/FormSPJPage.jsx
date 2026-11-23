@@ -201,7 +201,9 @@ export default function FormSPJPage() {
                   Operator Penginput: {currentUser?.nama} <span className="text-purple-700 font-semibold">(Akun Anda)</span>
                 </p>
                 <p className="text-[10px] text-slate-500 font-mono">
-                  NIP: {currentUser?.nip_baru} • Tim: {currentUser?.tim_kerja}
+                  {currentUser?.role === 'superadmin' 
+                    ? 'Administrator Pengelola Sistem BPS Sambas' 
+                    : `NIP: ${currentUser?.nip_baru || '-'} • Tim: ${currentUser?.tim_kerja || '-'}`}
                 </p>
               </div>
             </div>

@@ -68,7 +68,7 @@ export default function DashboardPage() {
               {isSuperadmin && <Crown className="w-6 h-6 text-amber-300" title="Superadmin" />}
             </h1>
             <p className="text-xs text-purple-200 max-w-xl">
-              Peran: <strong className="text-amber-300 uppercase">{currentUser?.role}</strong> ({currentUser?.jabatan}). 
+              Peran: <strong className="text-amber-300 uppercase">{currentUser?.role}</strong>{currentUser?.jabatan ? ` (${currentUser.jabatan})` : isSuperadmin ? ' (Administrator Sistem)' : ''}. 
               {isSuperadmin 
                 ? ' Anda memiliki akses SUPERADMIN penuh ke seluruh data, modul dan pengaturan sistem.' 
                 : ' Akses menu dibatasi sesuai kewenangan tugas jabatan Anda.'}

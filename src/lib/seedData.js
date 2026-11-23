@@ -9,18 +9,18 @@
 export const PEGAWAI_LIST = [
   // 1. Superadmin Khusus Pengelola Sistem (Tanpa NIP, Pangkat/Gol, Jabatan Fungsional/Keuangan, dan Email)
   {
-    nip_baru: "-",
-    nip_lama: "-",
+    nip_baru: "",
+    nip_lama: "",
     username: "superadmin",
     password: "admin123",
     nama: "Superadmin SIGAP BESAPRAH",
-    pangkat_golongan: "-",
-    jabatan: "-",
-    status_pegawai: "-",
-    jabatan_keuangan: "-",
-    tim_kerja: "-",
+    pangkat_golongan: "",
+    jabatan: "",
+    status_pegawai: "Administrator Sistem",
+    jabatan_keuangan: "",
+    tim_kerja: "",
     role: "superadmin",
-    email: "-",
+    email: "",
     has_account: true,
     status_akun: "Aktif"
   },

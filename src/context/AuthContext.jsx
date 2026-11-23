@@ -104,23 +104,47 @@ const ROLE_PERMISSIONS = {
   ]
 };
 
+// Helper untuk memastikan akun superadmin steril dari NIP, Pangkat/Gol, Jabatan Fungsional/Keuangan, dan Email
+function sanitizeUser(u) {
+  if (!u) return u;
+  if (u.role === 'superadmin' || u.username === 'superadmin') {
+    return {
+      ...u,
+      nip_baru: '',
+      nip_lama: '',
+      pangkat_golongan: '',
+      jabatan: '',
+      status_pegawai: 'Administrator Sistem',
+      jabatan_keuangan: '',
+      tim_kerja: '',
+      email: ''
+    };
+  }
+  return u;
+}
+
 export function AuthProvider({ children }) {
   // Master users list (disimpan di localStorage atau fallback ke PEGAWAI_LIST)
   const [users, setUsers] = useState(() => {
-    const saved = localStorage.getItem('sigap_users_v6');
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      } catch (e) {
-        console.error('Error parsing sigap_users_v6:', e);
-      }
-    }
-    // Bersihkan versi lama agar data terbaru langsung aktif
+    // Bersihkan versi lama agar pembaruan data superadmin & pegawai langsung aktif
     localStorage.removeItem('sigap_users');
     localStorage.removeItem('sigap_users_v4');
     localStorage.removeItem('sigap_users_v5');
-    return PEGAWAI_LIST;
+    localStorage.removeItem('sigap_users_v6');
+    localStorage.removeItem('sigap_users_v7');
+
+    const saved = localStorage.getItem('sigap_users_v8');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map(sanitizeUser);
+        }
+      } catch (e) {
+        console.error('Error parsing sigap_users_v8:', e);
+      }
+    }
+    return PEGAWAI_LIST.map(sanitizeUser);
   });
 
   // Current active logged-in user: STRICT REAL AUTH (starts as null if no active session)
@@ -131,7 +155,7 @@ export function AuthProvider({ children }) {
         const parsed = JSON.parse(saved);
         // Validasi hanya user dengan has_account yang bisa memegang sesi aktif
         if (parsed && parsed.username && parsed.has_account !== false) {
-          return parsed;
+          return sanitizeUser(parsed);
         }
       } catch (e) {
         console.error('Error parsing sigap_user:', e);
@@ -158,7 +182,7 @@ export function AuthProvider({ children }) {
 
   // Save changes to localStorage
   useEffect(() => {
-    localStorage.setItem('sigap_users_v6', JSON.stringify(users));
+    localStorage.setItem('sigap_users_v8', JSON.stringify(users.map(sanitizeUser)));
   }, [users]);
 
   useEffect(() => {
@@ -215,8 +239,9 @@ export function AuthProvider({ children }) {
       return { success: false, message: 'Kata sandi yang Anda masukkan salah.' };
     }
 
-    setCurrentUser(found);
-    return { success: true, user: found };
+    const cleanUser = sanitizeUser(found);
+    setCurrentUser(cleanUser);
+    return { success: true, user: cleanUser };
   };
 
   // User Logout

@@ -762,7 +762,7 @@ export default function MasterPegawaiPage() {
             <div className="my-4 p-3 bg-purple-50/60 rounded-2xl border border-purple-100 text-xs">
               <div className="font-bold text-purple-950">{selectedUser.nama}</div>
               <div className="text-purple-700 font-mono text-[11px] mt-0.5">
-                Username: <span className="font-bold">@{selectedUser.username}</span> | NIP: {selectedUser.nip_baru}
+                Username: <span className="font-bold">@{selectedUser.username}</span>{selectedUser.nip_baru && selectedUser.nip_baru !== '-' ? ` | NIP: ${selectedUser.nip_baru}` : ''}
               </div>
             </div>
 

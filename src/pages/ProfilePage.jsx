@@ -129,9 +129,15 @@ export default function ProfilePage() {
               </span>
             </div>
 
-            <p className="text-xs text-purple-200 font-medium">
-              {currentUser.jabatan} • {currentUser.pangkat_golongan}
-            </p>
+            {isSuperadmin ? (
+              <p className="text-xs text-purple-200 font-medium">
+                Administrator Pengelola Sistem BPS Kabupaten Sambas
+              </p>
+            ) : (
+              <p className="text-xs text-purple-200 font-medium">
+                {currentUser.jabatan} • {currentUser.pangkat_golongan}
+              </p>
+            )}
 
             <div className="pt-2 flex flex-wrap items-center justify-center sm:justify-start gap-4 text-xs text-purple-200/90">
               {currentUser.role === 'superadmin' ? (
@@ -179,26 +185,45 @@ export default function ProfilePage() {
                 </span>
               </div>
 
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50">
-                <span className="text-slate-500 font-medium">NIP Baru (18 Digit)</span>
-                <span className="font-mono font-semibold text-slate-800">
-                  {currentUser.role === 'superadmin' ? '-' : currentUser.nip_baru}
-                </span>
-              </div>
+              {isSuperadmin ? (
+                <>
+                  <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50">
+                    <span className="text-slate-500 font-medium">Peran & Hak Akses</span>
+                    <span className="font-bold text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-md border border-purple-200">
+                      SUPERADMIN (Akses Penuh)
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50">
+                    <span className="text-slate-500 font-medium">Status Akun</span>
+                    <span className="font-semibold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200">
+                      Administrator Pengelola Sistem
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50">
+                    <span className="text-slate-500 font-medium">NIP Baru (18 Digit)</span>
+                    <span className="font-mono font-semibold text-slate-800">
+                      {currentUser.nip_baru || '-'}
+                    </span>
+                  </div>
 
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50">
-                <span className="text-slate-500 font-medium">NIP Lama</span>
-                <span className="font-mono font-semibold text-slate-800">
-                  {currentUser.role === 'superadmin' ? '-' : (currentUser.nip_lama || '-')}
-                </span>
-              </div>
+                  <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50">
+                    <span className="text-slate-500 font-medium">NIP Lama</span>
+                    <span className="font-mono font-semibold text-slate-800">
+                      {currentUser.nip_lama || '-'}
+                    </span>
+                  </div>
 
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50">
-                <span className="text-slate-500 font-medium">Status Kepegawaian</span>
-                <span className="font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-                  {currentUser.role === 'superadmin' ? 'Administrator Sistem' : (currentUser.status_pegawai || 'PNS')}
-                </span>
-              </div>
+                  <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50">
+                    <span className="text-slate-500 font-medium">Status Kepegawaian</span>
+                    <span className="font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                      {currentUser.status_pegawai || 'PNS'}
+                    </span>
+                  </div>
+                </>
+              )}
 
               <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50">
                 <span className="text-slate-500 font-medium">Satuan Kerja</span>

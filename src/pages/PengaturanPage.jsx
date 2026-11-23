@@ -96,24 +96,45 @@ export default function PengaturanPage() {
         <h2 className="text-sm font-bold text-slate-900 border-b border-purple-50 pb-2">
           Profil Akun Aktif
         </h2>
-        <div className="grid grid-cols-2 gap-4 text-xs">
-          <div>
-            <span className="text-slate-400">Nama Lengkap:</span>
-            <p className="font-bold text-slate-800">{currentUser?.nama}</p>
+        {currentUser?.role === 'superadmin' ? (
+          <div className="grid grid-cols-2 gap-4 text-xs">
+            <div>
+              <span className="text-slate-400">Nama Akun:</span>
+              <p className="font-bold text-slate-800">{currentUser?.nama}</p>
+            </div>
+            <div>
+              <span className="text-slate-400">Username Login:</span>
+              <p className="font-mono font-bold text-purple-700">@{currentUser?.username}</p>
+            </div>
+            <div>
+              <span className="text-slate-400">Peran Sistem:</span>
+              <p className="font-bold text-purple-700 uppercase">SUPERADMIN (Akses Penuh)</p>
+            </div>
+            <div>
+              <span className="text-slate-400">Status Akun:</span>
+              <p className="font-semibold text-emerald-700">Administrator Pengelola Sistem BPS Sambas</p>
+            </div>
           </div>
-          <div>
-            <span className="text-slate-400">NIP Baru:</span>
-            <p className="font-mono font-bold text-slate-800">{currentUser?.nip_baru}</p>
+        ) : (
+          <div className="grid grid-cols-2 gap-4 text-xs">
+            <div>
+              <span className="text-slate-400">Nama Lengkap:</span>
+              <p className="font-bold text-slate-800">{currentUser?.nama}</p>
+            </div>
+            <div>
+              <span className="text-slate-400">NIP Baru:</span>
+              <p className="font-mono font-bold text-slate-800">{currentUser?.nip_baru || '-'}</p>
+            </div>
+            <div>
+              <span className="text-slate-400">Pangkat & Golongan:</span>
+              <p className="text-slate-700">{currentUser?.pangkat_golongan || '-'}</p>
+            </div>
+            <div>
+              <span className="text-slate-400">Peran Sistem:</span>
+              <p className="font-bold text-purple-700 uppercase">{currentUser?.role}</p>
+            </div>
           </div>
-          <div>
-            <span className="text-slate-400">Pangkat & Golongan:</span>
-            <p className="text-slate-700">{currentUser?.pangkat_golongan}</p>
-          </div>
-          <div>
-            <span className="text-slate-400">Peran Sistem:</span>
-            <p className="font-bold text-purple-700 uppercase">{currentUser?.role}</p>
-          </div>
-        </div>
+        )}
       </div>
     </div>
   );
