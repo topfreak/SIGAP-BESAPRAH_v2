@@ -1,9 +1,18 @@
 import React from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
+import { useAuth } from '../../context/AuthContext';
 
 export default function MainLayout() {
+  const { currentUser } = useAuth();
+  const location = useLocation();
+
+  // Proteksi Akses: Jika belum login, arahkan ke halaman login
+  if (!currentUser) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
   return (
     <div className="flex min-h-screen bg-[#FAF9FF]">
       {/* Sidebar Nav */}

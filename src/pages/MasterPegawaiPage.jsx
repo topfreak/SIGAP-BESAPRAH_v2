@@ -2,26 +2,22 @@ import React, { useState } from 'react';
 import { 
   UserSquare2, 
   Search, 
-  Filter, 
   Mail, 
-  Award, 
   CheckCircle2, 
-  Plus, 
   KeyRound, 
   UserPlus, 
-  ShieldCheck, 
   Edit3, 
   Trash2, 
   X, 
   AlertCircle,
   Eye,
   EyeOff,
-  Crown
+  ShieldCheck
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function MasterPegawaiPage() {
-  const { pegawaiList, switchUser, currentUser, addUser, updateUser, resetUserPassword, deleteUser } = useAuth();
+  const { pegawaiList, currentUser, addUser, updateUser, resetUserPassword, deleteUser } = useAuth();
   const [search, setSearch] = useState('');
   const [filterTim, setFilterTim] = useState('Semua');
 
@@ -125,7 +121,7 @@ export default function MasterPegawaiPage() {
 
     const res = resetUserPassword(selectedUser.nip_baru, newPassword);
     if (res.success) {
-      showNotification('success', `Kata sandi untuk ${selectedUser.nama} (${selectedUser.username}) berhasil diubah!`);
+      showNotification('success', `Kata sandi untuk ${selectedUser.nama} (@${selectedUser.username}) berhasil diubah!`);
       setShowResetModal(false);
       setSelectedUser(null);
       setNewPassword('');
@@ -150,7 +146,7 @@ export default function MasterPegawaiPage() {
 
   // Handle Delete User
   const handleDeleteUser = (user) => {
-    if (window.confirm(`Yakin ingin menghapus akun ${user.nama} (${user.username})? Tindakan ini tidak dapat dibatalkan.`)) {
+    if (window.confirm(`Yakin ingin menghapus akun ${user.nama} (@${user.username})? Tindakan ini tidak dapat dibatalkan.`)) {
       const res = deleteUser(user.nip_baru);
       if (res.success) {
         showNotification('success', res.message);
@@ -161,7 +157,7 @@ export default function MasterPegawaiPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-sans">
       {/* Toast Notification */}
       {toast && (
         <div className={`p-4 rounded-2xl text-xs font-semibold flex items-center justify-between shadow-lg fixed top-20 right-6 z-50 animate-in slide-in-from-top duration-200 ${
@@ -187,7 +183,7 @@ export default function MasterPegawaiPage() {
             <span>Manajemen Pengguna & Pegawai BPS Sambas</span>
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Kelola data aparatur, username akun, peran sistem, dan pengaturan kata sandi
+            Kelola data aparatur, username login, peran sistem, dan pengelolaan kata sandi
           </p>
         </div>
 
@@ -308,66 +304,52 @@ export default function MasterPegawaiPage() {
                       </span>
                     </td>
 
-                    {/* Aksi */}
+                    {/* Aksi Superadmin (Tanpa One-Click Switch) */}
                     <td className="py-3 px-4 text-center">
-                      <div className="flex items-center justify-center gap-1.5">
-                        {isSuperadmin ? (
-                          <>
-                            {/* Reset Password Button */}
-                            <button
-                              onClick={() => {
-                                setSelectedUser(p);
-                                setNewPassword('');
-                                setConfirmPassword('');
-                                setShowResetModal(true);
-                              }}
-                              title="Reset Password Pengguna"
-                              className="p-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 transition"
-                            >
-                              <KeyRound className="w-3.5 h-3.5" />
-                            </button>
-
-                            {/* Edit User Button */}
-                            <button
-                              onClick={() => {
-                                setSelectedUser({ ...p });
-                                setShowEditModal(true);
-                              }}
-                              title="Edit Data Akun"
-                              className="p-1.5 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 transition"
-                            >
-                              <Edit3 className="w-3.5 h-3.5" />
-                            </button>
-
-                            {/* Delete User Button (not allowed on self) */}
-                            {!isCurrent && (
-                              <button
-                                onClick={() => handleDeleteUser(p)}
-                                title="Hapus Akun"
-                                className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            )}
-
-                            {/* Switch User for simulation */}
-                            <button
-                              onClick={() => switchUser(p.nip_baru)}
-                              title="Masuk Sebagai Pegawai Ini"
-                              className="px-2 py-1 rounded-lg bg-purple-100 hover:bg-purple-200 text-purple-900 font-bold text-[10px] transition ml-1"
-                            >
-                              Simulasi
-                            </button>
-                          </>
-                        ) : (
+                      {isSuperadmin ? (
+                        <div className="flex items-center justify-center gap-1.5">
+                          {/* Reset Password Button */}
                           <button
-                            onClick={() => switchUser(p.nip_baru)}
-                            className="px-2.5 py-1 rounded-lg bg-purple-100 hover:bg-purple-200 text-purple-900 font-bold text-[10px] transition"
+                            onClick={() => {
+                              setSelectedUser(p);
+                              setNewPassword('');
+                              setConfirmPassword('');
+                              setShowResetModal(true);
+                            }}
+                            title="Reset Password Akun Ini"
+                            className="p-1.5 rounded-lg bg-amber-50 hover:bg-amber-100 text-amber-700 border border-amber-200 transition"
                           >
-                            Pilih Akun Ini
+                            <KeyRound className="w-3.5 h-3.5" />
                           </button>
-                        )}
-                      </div>
+
+                          {/* Edit User Button */}
+                          <button
+                            onClick={() => {
+                              setSelectedUser({ ...p });
+                              setShowEditModal(true);
+                            }}
+                            title="Edit Data Akun"
+                            className="p-1.5 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-700 border border-purple-200 transition"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                          </button>
+
+                          {/* Delete User Button (not allowed on self) */}
+                          {!isCurrent && (
+                            <button
+                              onClick={() => handleDeleteUser(p)}
+                              title="Hapus Akun"
+                              className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 transition"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-semibold border border-emerald-200">
+                          Aktif
+                        </span>
+                      )}
                     </td>
                   </tr>
                 );
@@ -414,7 +396,7 @@ export default function MasterPegawaiPage() {
                     onChange={(e) => setNewUserData({ ...newUserData, username: e.target.value })}
                     placeholder="Contoh: budi.santoso"
                     required
-                    className="w-full px-3 py-2 bg-purple-50/50 border border-purple-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400"
+                    className="w-full px-3 py-2 bg-purple-50/50 border border-purple-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 font-mono"
                   />
                 </div>
 
@@ -427,7 +409,7 @@ export default function MasterPegawaiPage() {
                     type="text"
                     value={newUserData.password}
                     onChange={(e) => setNewUserData({ ...newUserData, password: e.target.value })}
-                    placeholder="Min. 6 karakter (cth: bps6101)"
+                    placeholder="Min. 6 karakter"
                     required
                     minLength={6}
                     className="w-full px-3 py-2 bg-purple-50/50 border border-purple-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 font-mono"
@@ -473,7 +455,7 @@ export default function MasterPegawaiPage() {
                     type="text"
                     value={newUserData.nip_lama}
                     onChange={(e) => setNewUserData({ ...newUserData, nip_lama: e.target.value })}
-                    placeholder="Opsional (cth: 340012345)"
+                    placeholder="Opsional"
                     className="w-full px-3 py-2 bg-purple-50/50 border border-purple-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 font-mono"
                   />
                 </div>
@@ -603,7 +585,7 @@ export default function MasterPegawaiPage() {
             <div className="my-4 p-3 bg-purple-50/60 rounded-2xl border border-purple-100 text-xs">
               <div className="font-bold text-purple-950">{selectedUser.nama}</div>
               <div className="text-purple-700 font-mono text-[11px] mt-0.5">
-                Username: <span className="font-bold">{selectedUser.username}</span> | NIP: {selectedUser.nip_baru}
+                Username: <span className="font-bold">@{selectedUser.username}</span> | NIP: {selectedUser.nip_baru}
               </div>
             </div>
 
@@ -620,7 +602,7 @@ export default function MasterPegawaiPage() {
                     placeholder="Minimal 6 karakter"
                     required
                     minLength={6}
-                    className="w-full px-3.5 py-2.5 bg-purple-50/40 border border-purple-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400"
+                    className="w-full px-3.5 py-2.5 bg-purple-50/40 border border-purple-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 font-mono"
                   />
                   <button
                     type="button"
@@ -643,7 +625,7 @@ export default function MasterPegawaiPage() {
                   placeholder="Ketik ulang kata sandi baru"
                   required
                   minLength={6}
-                  className="w-full px-3.5 py-2.5 bg-purple-50/40 border border-purple-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400"
+                  className="w-full px-3.5 py-2.5 bg-purple-50/40 border border-purple-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-400 font-mono"
                 />
               </div>
 

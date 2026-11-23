@@ -18,7 +18,7 @@ import { useAuth } from '../context/AuthContext';
 
 export default function LandingPage() {
   const navigate = useNavigate();
-  const { transactions } = useAuth();
+  const { transactions, currentUser } = useAuth();
   const [quickSearch, setQuickSearch] = useState('');
 
   const handleQuickSearch = (e) => {
@@ -67,13 +67,23 @@ export default function LandingPage() {
             <Search className="w-3.5 h-3.5" />
             <span>Lacak Berkas</span>
           </Link>
-          <Link
-            to="/dashboard"
-            className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-purple-700 to-indigo-600 hover:from-purple-800 hover:to-indigo-700 rounded-xl shadow-md shadow-purple-500/25 transition transform active:scale-95"
-          >
-            <span>Masuk Aplikasi</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
+          {currentUser ? (
+            <Link
+              to="/dashboard"
+              className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-purple-700 to-indigo-600 hover:from-purple-800 hover:to-indigo-700 rounded-xl shadow-md shadow-purple-500/25 transition transform active:scale-95"
+            >
+              <span>Dasbor ({currentUser.nama.split(' ')[0]})</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          ) : (
+            <Link
+              to="/login"
+              className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-purple-700 to-indigo-600 hover:from-purple-800 hover:to-indigo-700 rounded-xl shadow-md shadow-purple-500/25 transition transform active:scale-95"
+            >
+              <span>Masuk Sistem</span>
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          )}
         </div>
       </nav>
 

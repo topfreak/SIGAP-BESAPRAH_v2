@@ -116,13 +116,20 @@ export function AuthProvider({ children }) {
     return PEGAWAI_LIST;
   });
 
-  // Current active logged-in user
+  // Current active logged-in user: STRICT REAL AUTH (starts as null if no active session)
   const [currentUser, setCurrentUser] = useState(() => {
     const saved = localStorage.getItem('sigap_user');
     if (saved) {
-      try { return JSON.parse(saved); } catch (e) {}
+      try {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.username && parsed.nip_baru) {
+          return parsed;
+        }
+      } catch (e) {
+        console.error('Error parsing sigap_user:', e);
+      }
     }
-    return PEGAWAI_LIST.find(p => p.role === 'superadmin') || PEGAWAI_LIST[0];
+    return null; // Pengguna wajib login terlebih dahulu!
   });
 
   const [transactions, setTransactions] = useState(() => {
@@ -164,20 +171,12 @@ export function AuthProvider({ children }) {
 
   // Check if current user can access a route
   const canAccess = (path) => {
-    if (path === '/profile') return !!currentUser;
     if (!currentUser) return path === '/' || path === '/login' || path === '/lacak';
+    if (path === '/profile') return true;
     const role = currentUser.role || 'pegawai';
     const allowed = ROLE_PERMISSIONS[role] || ROLE_PERMISSIONS.pegawai;
     if (allowed.includes('*')) return true; // Superadmin
     return allowed.some(p => path === p || (p !== '/dashboard' && path.startsWith(p)));
-  };
-
-  // Switch perspective for testing/demo
-  const switchUser = (nip) => {
-    const found = users.find(p => p.nip_baru === nip || p.nip_lama === nip);
-    if (found) {
-      setCurrentUser(found);
-    }
   };
 
   // Real Login with Username and Password
@@ -196,20 +195,26 @@ export function AuthProvider({ children }) {
       return { success: false, message: 'Username atau NIP tidak ditemukan dalam sistem.' };
     }
 
-    // Password validation
-    if (found.password && found.password !== passwordInput) {
-      return { success: false, message: 'Kata sandi salah. Silakan periksa kembali.' };
+    // Strict Password Validation
+    if (found.password !== passwordInput) {
+      return { success: false, message: 'Kata sandi yang Anda masukkan salah.' };
     }
 
     setCurrentUser(found);
     return { success: true, user: found };
   };
 
+  // User Logout
+  const logout = () => {
+    setCurrentUser(null);
+    localStorage.removeItem('sigap_user');
+  };
+
   // User self change password
   const changePassword = (oldPassword, newPassword) => {
     if (!currentUser) return { success: false, message: 'Sesi pengguna tidak aktif.' };
     
-    if (currentUser.password && currentUser.password !== oldPassword) {
+    if (currentUser.password !== oldPassword) {
       return { success: false, message: 'Kata sandi saat ini tidak sesuai.' };
     }
     
@@ -332,10 +337,6 @@ export function AuthProvider({ children }) {
     return { success: true, message: 'Akun pegawai berhasil dihapus dari sistem.' };
   };
 
-  const logout = () => {
-    setCurrentUser(null);
-  };
-
   const addTransaction = (newTx) => {
     const tx = {
       ...newTx,
@@ -376,7 +377,6 @@ export function AuthProvider({ children }) {
   return (
     <AuthContext.Provider value={{
       currentUser,
-      switchUser,
       login,
       logout,
       changePassword,

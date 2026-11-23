@@ -3,22 +3,19 @@ import { useNavigate, Link } from 'react-router-dom';
 import { 
   Bell, 
   Search, 
-  UserCheck, 
   LogOut, 
   ExternalLink, 
-  Layers, 
-  CheckCircle2, 
-  AlertTriangle,
   ChevronDown,
-  KeyRound,
-  UserCircle
+  UserCircle,
+  ShieldCheck,
+  KeyRound
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export default function Topbar() {
   const navigate = useNavigate();
-  const { currentUser, switchUser, pegawaiList, logout, transactions } = useAuth();
-  const [showRoleMenu, setShowRoleMenu] = useState(false);
+  const { currentUser, logout, transactions } = useAuth();
+  const [showUserMenu, setShowUserMenu] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   const perluPerbaikanCount = transactions.filter(t => t.status_dokumen === 'Perlu Perbaikan').length;
@@ -28,6 +25,11 @@ export default function Topbar() {
     if (searchQuery.trim()) {
       navigate(`/pengajuan-spj?q=${encodeURIComponent(searchQuery.trim())}`);
     }
+  };
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
   };
 
   return (
@@ -69,10 +71,10 @@ export default function Topbar() {
           <span>Portal Publik</span>
         </Link>
 
-        {/* User Role Switcher Dropdown */}
+        {/* User Account Dropdown */}
         <div className="relative">
           <button
-            onClick={() => setShowRoleMenu(!showRoleMenu)}
+            onClick={() => setShowUserMenu(!showUserMenu)}
             className="flex items-center gap-2.5 p-1.5 pr-3 rounded-xl hover:bg-purple-50 transition border border-transparent hover:border-purple-200"
           >
             <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-purple-600 to-indigo-600 text-white flex items-center justify-center font-bold text-xs shadow-xs">
@@ -92,63 +94,53 @@ export default function Topbar() {
             <ChevronDown className="w-3.5 h-3.5 text-purple-400" />
           </button>
 
-          {/* Dropdown Menu */}
-          {showRoleMenu && (
+          {/* Real User Menu */}
+          {showUserMenu && (
             <div 
               className="absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-purple-100 py-2 z-50 animate-in fade-in zoom-in-95 duration-100"
-              onClick={() => setShowRoleMenu(false)}
+              onClick={() => setShowUserMenu(false)}
             >
-              <div className="px-4 py-2 border-b border-purple-50">
-                <p className="text-[11px] font-semibold text-purple-900">Masuk Sebagai:</p>
-                <p className="text-xs font-bold text-slate-800">{currentUser?.nama}</p>
-                <p className="text-[10px] text-purple-600 font-mono font-semibold">User: {currentUser?.username || '-'}</p>
-                <p className="text-[10px] text-slate-400">NIP: {currentUser?.nip_baru}</p>
+              {/* Profile Details Header */}
+              <div className="px-4 py-3 border-b border-purple-50 bg-purple-50/30">
+                <p className="text-[10px] font-bold text-purple-600 uppercase tracking-wider">Sedang Masuk Sebagai:</p>
+                <p className="text-xs font-extrabold text-slate-900 mt-0.5">{currentUser?.nama}</p>
+                <div className="flex items-center gap-1.5 mt-1">
+                  <span className="text-[10px] font-mono bg-purple-100 text-purple-900 px-1.5 py-0.2 rounded font-semibold">
+                    @{currentUser?.username}
+                  </span>
+                  <span className="text-[10px] text-slate-400 font-mono">
+                    NIP: {currentUser?.nip_baru}
+                  </span>
+                </div>
               </div>
 
-              {/* Direct Link to Profile & Change Password */}
-              <div className="p-2 border-b border-purple-50">
+              {/* Action Links */}
+              <div className="p-2 space-y-1">
                 <Link
                   to="/profile"
-                  className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-purple-900 bg-purple-50 hover:bg-purple-100 flex items-center gap-2 transition"
+                  className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-purple-900 hover:bg-purple-50 flex items-center gap-2.5 transition"
                 >
-                  <UserCircle className="w-4 h-4 text-purple-700" />
-                  <span>Profil & Ganti Kata Sandi</span>
+                  <UserCircle className="w-4 h-4 text-purple-600" />
+                  <span>Profil Pengguna</span>
+                </Link>
+
+                <Link
+                  to="/profile"
+                  className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold text-purple-900 hover:bg-purple-50 flex items-center gap-2.5 transition"
+                >
+                  <KeyRound className="w-4 h-4 text-purple-600" />
+                  <span>Ganti Kata Sandi</span>
                 </Link>
               </div>
 
-              <div className="px-3 py-1.5 text-[10px] font-bold text-purple-500 uppercase tracking-wider">
-                Simulasi Peran Pegawai BPS Sambas:
-              </div>
-
-              <div className="max-h-48 overflow-y-auto px-1 space-y-0.5">
-                {pegawaiList.map((p) => (
-                  <button
-                    key={p.nip_baru}
-                    onClick={() => switchUser(p.nip_baru)}
-                    className={`w-full text-left px-3 py-1.5 rounded-lg text-xs flex items-center justify-between transition ${
-                      currentUser?.nip_baru === p.nip_baru 
-                        ? 'bg-purple-100 text-purple-900 font-bold' 
-                        : 'hover:bg-purple-50 text-slate-700'
-                    }`}
-                  >
-                    <div className="truncate pr-2">
-                      <div className="truncate">{p.nama}</div>
-                      <div className="text-[10px] text-slate-400">{p.username ? `@${p.username}` : p.jabatan}</div>
-                    </div>
-                    <span className="text-[9px] px-1.5 py-0.5 rounded uppercase font-semibold bg-white border border-purple-200 text-purple-700 flex-shrink-0">
-                      {p.role}
-                    </span>
-                  </button>
-                ))}
-              </div>
-
-              <div className="border-t border-purple-50 mt-2 pt-1 px-2">
+              {/* Logout Button */}
+              <div className="border-t border-purple-50 pt-1.5 px-2">
                 <button
-                  onClick={logout}
-                  className="w-full text-left px-3 py-1.5 text-xs text-rose-600 hover:bg-rose-50 rounded-lg flex items-center gap-2 font-medium"
+                  onClick={handleLogout}
+                  className="w-full text-left px-3 py-2 text-xs text-rose-600 hover:bg-rose-50 rounded-xl flex items-center gap-2.5 font-bold transition"
                 >
-                  <LogOut className="w-3.5 h-3.5" />
-                  <span>Keluar Sesi</span>
+                  <LogOut className="w-4 h-4" />
+                  <span>Keluar Sesi (Logout)</span>
                 </button>
               </div>
             </div>
