@@ -300,15 +300,14 @@ export default function MasterPegawaiPage() {
           <table className="w-full text-left text-xs border-collapse">
             <thead className="bg-[#2E1065] text-purple-100 font-bold uppercase text-[10px] tracking-wider">
               <tr>
-                <th className="py-3 px-3">No.</th>
-                <th className="py-3 px-3">Nama Pegawai & Status</th>
-                <th className="py-3 px-3">NIP Baru / Lama</th>
-                <th className="py-3 px-3">Pangkat & Golongan</th>
-                <th className="py-3 px-3">Jabatan Fungsional</th>
-                <th className="py-3 px-3 text-center">Jabatan Keuangan</th>
-                <th className="py-3 px-3 text-center">Tim</th>
-                <th className="py-3 px-3 text-center">Status Akun</th>
-                <th className="py-3 px-3 text-center">Aksi Manajemen</th>
+                <th className="py-3.5 px-3 text-center">No.</th>
+                <th className="py-3.5 px-4">Nama Pegawai & Status</th>
+                <th className="py-3.5 px-4 font-mono">NIP Baru / Lama</th>
+                <th className="py-3.5 px-4">Jabatan & Pangkat/Gol.</th>
+                <th className="py-3.5 px-3 text-center whitespace-nowrap">Jabatan Keuangan</th>
+                <th className="py-3.5 px-3 text-center whitespace-nowrap">Tim</th>
+                <th className="py-3.5 px-4 text-center whitespace-nowrap min-w-[130px]">Status Akun</th>
+                <th className="py-3.5 px-3 text-center whitespace-nowrap">Aksi Manajemen</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-purple-50">
@@ -319,10 +318,10 @@ export default function MasterPegawaiPage() {
 
                 return (
                   <tr key={p.username || p.nip_baru || idx} className={`hover:bg-purple-50/40 transition ${isCurrent ? 'bg-purple-50/60' : ''}`}>
-                    <td className="py-3.5 px-3 font-mono text-slate-400">{idx + 1}</td>
+                    <td className="py-3.5 px-3 text-center font-mono text-slate-400">{idx + 1}</td>
                     
                     {/* Pegawai & Status */}
-                    <td className="py-3.5 px-3">
+                    <td className="py-3.5 px-4">
                       <div className="font-bold text-slate-900 flex items-center gap-1.5">
                         <span>{p.nama}</span>
                         {isCurrent && (
@@ -351,7 +350,7 @@ export default function MasterPegawaiPage() {
                     </td>
 
                     {/* NIP Baru / Lama */}
-                    <td className="py-3.5 px-3 font-mono">
+                    <td className="py-3.5 px-4 font-mono">
                       {isAdmin || !p.nip_baru || p.nip_baru === '-' ? (
                         <span className="text-slate-400 font-mono text-[11px]">-</span>
                       ) : (
@@ -362,30 +361,28 @@ export default function MasterPegawaiPage() {
                       )}
                     </td>
 
-                    {/* Pangkat & Golongan */}
-                    <td className="py-3.5 px-3 font-medium text-slate-700">
-                      {isAdmin || !p.pangkat_golongan || p.pangkat_golongan === '-' ? (
+                    {/* Kolom Gabungan: Jabatan Fungsional (Atas) & Pangkat/Golongan (Bawah) */}
+                    <td className="py-3.5 px-4">
+                      {isAdmin || (!p.jabatan && !p.pangkat_golongan) || (p.jabatan === '-' && p.pangkat_golongan === '-') ? (
                         <span className="text-slate-400 font-mono text-[11px]">-</span>
                       ) : (
-                        p.pangkat_golongan
-                      )}
-                    </td>
-
-                    {/* Jabatan Fungsional */}
-                    <td className="py-3.5 px-3 font-semibold text-slate-800">
-                      {isAdmin || !p.jabatan || p.jabatan === '-' ? (
-                        <span className="text-slate-400 font-mono text-[11px]">-</span>
-                      ) : (
-                        p.jabatan
+                        <div>
+                          <div className="font-bold text-slate-800 text-xs leading-snug">
+                            {p.jabatan && p.jabatan !== '-' ? p.jabatan : '-'}
+                          </div>
+                          <div className="text-[11px] text-slate-500 font-medium mt-0.5">
+                            {p.pangkat_golongan && p.pangkat_golongan !== '-' ? p.pangkat_golongan : '-'}
+                          </div>
+                        </div>
                       )}
                     </td>
 
                     {/* Jabatan Keuangan */}
-                    <td className="py-3.5 px-3 text-center">
+                    <td className="py-3.5 px-3 text-center whitespace-nowrap">
                       {isAdmin || !p.jabatan_keuangan || p.jabatan_keuangan === '-' ? (
                         <span className="text-slate-400 font-mono text-[11px]">-</span>
                       ) : (
-                        <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold border ${
+                        <span className={`inline-block whitespace-nowrap px-3 py-1 rounded-full text-[10px] font-extrabold border shadow-2xs ${
                           p.jabatan_keuangan === 'KPA' ? 'bg-amber-100 text-amber-950 border-amber-300' :
                           p.jabatan_keuangan.includes('PPK') ? 'bg-purple-100 text-purple-950 border-purple-300' :
                           p.jabatan_keuangan === 'PPSPM' ? 'bg-indigo-100 text-indigo-950 border-indigo-300' :
@@ -399,11 +396,11 @@ export default function MasterPegawaiPage() {
                     </td>
 
                     {/* Tim Kerja */}
-                    <td className="py-3.5 px-3 text-center">
+                    <td className="py-3.5 px-3 text-center whitespace-nowrap">
                       {isAdmin || !p.tim_kerja || p.tim_kerja === '-' ? (
                         <span className="text-slate-400 font-mono text-[11px]">-</span>
                       ) : (
-                        <span className="px-2 py-0.5 rounded-md bg-purple-100/80 text-purple-800 font-bold text-[10px]">
+                        <span className="inline-block whitespace-nowrap px-2.5 py-0.5 rounded-md bg-purple-100/80 text-purple-800 font-bold text-[10px]">
                           {p.tim_kerja}
                         </span>
                       )}
