@@ -9,6 +9,7 @@ const ROLE_PERMISSIONS = {
   superadmin: ['*'], // Superadmin memiliki akses 100% tanpa batas
   kpa: [
     '/dashboard',
+    '/profile',
     '/pengajuan-spj',
     '/rekon-spj',
     '/panduan-akun',
@@ -25,6 +26,7 @@ const ROLE_PERMISSIONS = {
   ],
   ppk: [
     '/dashboard',
+    '/profile',
     '/pengajuan-spj',
     '/pengajuan-spj/baru',
     '/rekon-spj',
@@ -40,6 +42,7 @@ const ROLE_PERMISSIONS = {
   ],
   ppspm: [
     '/dashboard',
+    '/profile',
     '/pengajuan-spj',
     '/rekon-spj',
     '/panduan-akun',
@@ -50,6 +53,7 @@ const ROLE_PERMISSIONS = {
   ],
   bendahara: [
     '/dashboard',
+    '/profile',
     '/pengajuan-spj',
     '/rekon-spj',
     '/panduan-akun',
@@ -61,6 +65,7 @@ const ROLE_PERMISSIONS = {
   ],
   verifikator: [
     '/dashboard',
+    '/profile',
     '/pengajuan-spj',
     '/rekon-spj',
     '/panduan-akun',
@@ -71,6 +76,7 @@ const ROLE_PERMISSIONS = {
   ],
   pj_kegiatan: [
     '/dashboard',
+    '/profile',
     '/pengajuan-spj',
     '/pengajuan-spj/baru',
     '/rekon-spj',
@@ -84,6 +90,7 @@ const ROLE_PERMISSIONS = {
   ],
   pegawai: [
     '/dashboard',
+    '/profile',
     '/pengajuan-spj',
     '/panduan-akun',
     '/kalkulator-pajak',
@@ -95,7 +102,21 @@ const ROLE_PERMISSIONS = {
 };
 
 export function AuthProvider({ children }) {
-  // Default to Superadmin agar user langsung bisa eksplorasi semua fitur
+  // Master users list (disimpan di localStorage atau fallback ke PEGAWAI_LIST)
+  const [users, setUsers] = useState(() => {
+    const saved = localStorage.getItem('sigap_users');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch (e) {
+        console.error('Error parsing sigap_users:', e);
+      }
+    }
+    return PEGAWAI_LIST;
+  });
+
+  // Current active logged-in user
   const [currentUser, setCurrentUser] = useState(() => {
     const saved = localStorage.getItem('sigap_user');
     if (saved) {
@@ -120,8 +141,17 @@ export function AuthProvider({ children }) {
     return REKON_PETUGAS_LIST;
   });
 
+  // Save changes to localStorage
   useEffect(() => {
-    localStorage.setItem('sigap_user', JSON.stringify(currentUser));
+    localStorage.setItem('sigap_users', JSON.stringify(users));
+  }, [users]);
+
+  useEffect(() => {
+    if (currentUser) {
+      localStorage.setItem('sigap_user', JSON.stringify(currentUser));
+    } else {
+      localStorage.removeItem('sigap_user');
+    }
   }, [currentUser]);
 
   useEffect(() => {
@@ -134,6 +164,7 @@ export function AuthProvider({ children }) {
 
   // Check if current user can access a route
   const canAccess = (path) => {
+    if (path === '/profile') return !!currentUser;
     if (!currentUser) return path === '/' || path === '/login' || path === '/lacak';
     const role = currentUser.role || 'pegawai';
     const allowed = ROLE_PERMISSIONS[role] || ROLE_PERMISSIONS.pegawai;
@@ -141,34 +172,164 @@ export function AuthProvider({ children }) {
     return allowed.some(p => path === p || (p !== '/dashboard' && path.startsWith(p)));
   };
 
+  // Switch perspective for testing/demo
   const switchUser = (nip) => {
-    const found = PEGAWAI_LIST.find(p => p.nip_baru === nip || p.nip_lama === nip);
+    const found = users.find(p => p.nip_baru === nip || p.nip_lama === nip);
     if (found) {
       setCurrentUser(found);
     }
   };
 
-  const login = (emailOrNip) => {
-    const found = PEGAWAI_LIST.find(p => 
-      p.email.toLowerCase() === emailOrNip.toLowerCase() || 
-      p.nip_baru === emailOrNip || 
-      p.nip_lama === emailOrNip
-    );
-    if (found) {
-      setCurrentUser(found);
-      return { success: true, user: found };
+  // Real Login with Username and Password
+  const login = (usernameInput, passwordInput) => {
+    if (!usernameInput || !passwordInput) {
+      return { success: false, message: 'Username dan kata sandi wajib diisi.' };
     }
-    const guestUser = {
-      nip_baru: "999999999999999999",
-      nama: emailOrNip.split('@')[0] || "Pegawai BPS",
-      pangkat_golongan: "Penata/III/c",
-      jabatan: "Staf BPS Kabupaten Sambas",
-      role: "pegawai",
-      tim_kerja: "Umum",
-      email: emailOrNip
+
+    const cleanInput = usernameInput.trim().toLowerCase();
+    const found = users.find(p => 
+      p.username?.toLowerCase() === cleanInput ||
+      p.nip_baru === usernameInput.trim()
+    );
+
+    if (!found) {
+      return { success: false, message: 'Username atau NIP tidak ditemukan dalam sistem.' };
+    }
+
+    // Password validation
+    if (found.password && found.password !== passwordInput) {
+      return { success: false, message: 'Kata sandi salah. Silakan periksa kembali.' };
+    }
+
+    setCurrentUser(found);
+    return { success: true, user: found };
+  };
+
+  // User self change password
+  const changePassword = (oldPassword, newPassword) => {
+    if (!currentUser) return { success: false, message: 'Sesi pengguna tidak aktif.' };
+    
+    if (currentUser.password && currentUser.password !== oldPassword) {
+      return { success: false, message: 'Kata sandi saat ini tidak sesuai.' };
+    }
+    
+    if (!newPassword || newPassword.length < 6) {
+      return { success: false, message: 'Kata sandi baru minimal 6 karakter.' };
+    }
+
+    const updatedUser = { ...currentUser, password: newPassword };
+    setUsers(prev => prev.map(u => u.nip_baru === currentUser.nip_baru ? updatedUser : u));
+    setCurrentUser(updatedUser);
+    return { success: true, message: 'Kata sandi berhasil diperbarui!' };
+  };
+
+  // Superadmin: Add New User Account
+  const addUser = (userData) => {
+    if (currentUser?.role !== 'superadmin') {
+      return { success: false, message: 'Hanya Superadmin yang memiliki wewenang membuat akun baru.' };
+    }
+
+    const cleanUsername = (userData.username || '').trim().toLowerCase();
+    if (!cleanUsername) {
+      return { success: false, message: 'Username wajib diisi.' };
+    }
+
+    if (users.some(u => u.username?.toLowerCase() === cleanUsername)) {
+      return { success: false, message: `Username "${cleanUsername}" sudah digunakan oleh akun lain.` };
+    }
+
+    if (!userData.nip_baru || !userData.nip_baru.trim()) {
+      return { success: false, message: 'NIP Baru wajib diisi.' };
+    }
+
+    if (users.some(u => u.nip_baru === userData.nip_baru.trim())) {
+      return { success: false, message: `NIP Baru "${userData.nip_baru}" sudah terdaftar.` };
+    }
+
+    if (!userData.nama || !userData.nama.trim()) {
+      return { success: false, message: 'Nama lengkap pegawai wajib diisi.' };
+    }
+
+    if (!userData.password || userData.password.length < 6) {
+      return { success: false, message: 'Kata sandi akun minimal 6 karakter.' };
+    }
+
+    const newUser = {
+      nip_baru: userData.nip_baru.trim(),
+      nip_lama: (userData.nip_lama || '').trim(),
+      username: cleanUsername,
+      password: userData.password,
+      nama: userData.nama.trim(),
+      pangkat_golongan: userData.pangkat_golongan || 'Pengatur Muda/II/a',
+      jabatan: userData.jabatan || 'Staf Pelaksana',
+      status_pegawai: userData.status_pegawai || 'PNS',
+      role: userData.role || 'pegawai',
+      tim_kerja: userData.tim_kerja || 'Umum',
+      email: userData.email?.trim() || `${cleanUsername}@bps.go.id`,
+      created_at: new Date().toISOString()
     };
-    setCurrentUser(guestUser);
-    return { success: true, user: guestUser };
+
+    setUsers(prev => [newUser, ...prev]);
+    return { success: true, user: newUser, message: `Akun ${newUser.nama} (${newUser.username}) berhasil ditambahkan!` };
+  };
+
+  // Superadmin: Update User Details
+  const updateUser = (nip, updates) => {
+    setUsers(prev => prev.map(u => {
+      if (u.nip_baru === nip) {
+        const updated = { ...u, ...updates };
+        if (currentUser?.nip_baru === nip) {
+          setCurrentUser(updated);
+        }
+        return updated;
+      }
+      return u;
+    }));
+    return { success: true, message: 'Data akun berhasil diperbarui.' };
+  };
+
+  // Superadmin: Reset Any User's Password
+  const resetUserPassword = (nip, newPassword) => {
+    if (currentUser?.role !== 'superadmin') {
+      return { success: false, message: 'Hanya Superadmin yang dapat mereset kata sandi pengguna lain.' };
+    }
+
+    if (!newPassword || newPassword.length < 6) {
+      return { success: false, message: 'Kata sandi baru minimal 6 karakter.' };
+    }
+
+    let foundTarget = false;
+    setUsers(prev => prev.map(u => {
+      if (u.nip_baru === nip) {
+        foundTarget = true;
+        const updated = { ...u, password: newPassword };
+        if (currentUser?.nip_baru === nip) {
+          setCurrentUser(updated);
+        }
+        return updated;
+      }
+      return u;
+    }));
+
+    if (!foundTarget) {
+      return { success: false, message: 'Pengguna dengan NIP tersebut tidak ditemukan.' };
+    }
+
+    return { success: true, message: 'Kata sandi pengguna berhasil diubah.' };
+  };
+
+  // Superadmin: Delete User Account
+  const deleteUser = (nip) => {
+    if (currentUser?.role !== 'superadmin') {
+      return { success: false, message: 'Hanya Superadmin yang berwenang menghapus akun.' };
+    }
+
+    if (currentUser?.nip_baru === nip) {
+      return { success: false, message: 'Tidak dapat menghapus akun Anda sendiri yang sedang aktif digunakan.' };
+    }
+
+    setUsers(prev => prev.filter(u => u.nip_baru !== nip));
+    return { success: true, message: 'Akun pegawai berhasil dihapus dari sistem.' };
   };
 
   const logout = () => {
@@ -218,7 +379,12 @@ export function AuthProvider({ children }) {
       switchUser,
       login,
       logout,
-      pegawaiList: PEGAWAI_LIST,
+      changePassword,
+      addUser,
+      updateUser,
+      resetUserPassword,
+      deleteUser,
+      pegawaiList: users, // Reactive users list
       transactions,
       addTransaction,
       updateTransactionStatus,

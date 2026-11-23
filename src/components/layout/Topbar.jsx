@@ -9,7 +9,9 @@ import {
   Layers, 
   CheckCircle2, 
   AlertTriangle,
-  ChevronDown
+  ChevronDown,
+  KeyRound,
+  UserCircle
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -99,14 +101,26 @@ export default function Topbar() {
               <div className="px-4 py-2 border-b border-purple-50">
                 <p className="text-[11px] font-semibold text-purple-900">Masuk Sebagai:</p>
                 <p className="text-xs font-bold text-slate-800">{currentUser?.nama}</p>
-                <p className="text-[10px] text-slate-500">NIP: {currentUser?.nip_baru}</p>
+                <p className="text-[10px] text-purple-600 font-mono font-semibold">User: {currentUser?.username || '-'}</p>
+                <p className="text-[10px] text-slate-400">NIP: {currentUser?.nip_baru}</p>
+              </div>
+
+              {/* Direct Link to Profile & Change Password */}
+              <div className="p-2 border-b border-purple-50">
+                <Link
+                  to="/profile"
+                  className="w-full text-left px-3 py-2 rounded-xl text-xs font-bold text-purple-900 bg-purple-50 hover:bg-purple-100 flex items-center gap-2 transition"
+                >
+                  <UserCircle className="w-4 h-4 text-purple-700" />
+                  <span>Profil & Ganti Kata Sandi</span>
+                </Link>
               </div>
 
               <div className="px-3 py-1.5 text-[10px] font-bold text-purple-500 uppercase tracking-wider">
                 Simulasi Peran Pegawai BPS Sambas:
               </div>
 
-              <div className="max-h-56 overflow-y-auto px-1 space-y-0.5">
+              <div className="max-h-48 overflow-y-auto px-1 space-y-0.5">
                 {pegawaiList.map((p) => (
                   <button
                     key={p.nip_baru}
@@ -119,7 +133,7 @@ export default function Topbar() {
                   >
                     <div className="truncate pr-2">
                       <div className="truncate">{p.nama}</div>
-                      <div className="text-[10px] text-slate-400">{p.jabatan}</div>
+                      <div className="text-[10px] text-slate-400">{p.username ? `@${p.username}` : p.jabatan}</div>
                     </div>
                     <span className="text-[9px] px-1.5 py-0.5 rounded uppercase font-semibold bg-white border border-purple-200 text-purple-700 flex-shrink-0">
                       {p.role}

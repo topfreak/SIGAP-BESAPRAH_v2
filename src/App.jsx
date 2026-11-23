@@ -6,6 +6,7 @@ import MainLayout from './components/layout/MainLayout';
 import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
+import ProfilePage from './pages/ProfilePage';
 import DaftarSPJPage from './pages/DaftarSPJPage';
 import FormSPJPage from './pages/FormSPJPage';
 import DetailSPJPage from './pages/DetailSPJPage';
@@ -34,6 +35,7 @@ export default function App() {
       {/* Main Authenticated Layout with Sidebar and Topbar */}
       <Route element={<MainLayout />}>
         <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
         
         {/* Administrasi & SPJ */}
         <Route path="/pengajuan-spj" element={<DaftarSPJPage />} />

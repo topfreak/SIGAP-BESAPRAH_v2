@@ -11,6 +11,8 @@ export const PEGAWAI_LIST = [
   {
     nip_baru: "199901012024011001",
     nip_lama: "340000001",
+    username: "superadmin",
+    password: "admin123",
     nama: "Superadmin SIGAP BESAPRAH",
     pangkat_golongan: "Pranata Komputer Ahli / Pengelola",
     jabatan: "Administrator Sistem BPS Sambas",
@@ -22,6 +24,8 @@ export const PEGAWAI_LIST = [
   {
     nip_baru: "197908271999121001",
     nip_lama: "340016058",
+    username: "solikhin",
+    password: "bps6101",
     nama: "Solikhin, SST., M.Si",
     pangkat_golongan: "Pembina Tk.I/IV/b",
     jabatan: "Kepala Kantor (KPA)",
@@ -33,6 +37,8 @@ export const PEGAWAI_LIST = [
   {
     nip_baru: "197204191993111001",
     nip_lama: "340013716",
+    username: "samsuri",
+    password: "bps6101",
     nama: "Samsuri Sp, S.E.",
     pangkat_golongan: "Penata Tingkat I/III/d",
     jabatan: "Statistisi Penyelia",
@@ -44,6 +50,8 @@ export const PEGAWAI_LIST = [
   {
     nip_baru: "197204071996031001",
     nip_lama: "340015261",
+    username: "supardi",
+    password: "bps6101",
     nama: "Supardi, S.Mn.",
     pangkat_golongan: "Penata Tingkat I/III/d",
     jabatan: "Statistisi Ahli Muda",
@@ -55,6 +63,8 @@ export const PEGAWAI_LIST = [
   {
     nip_baru: "198207142006041002",
     nip_lama: "340018451",
+    username: "adi.rakhmat",
+    password: "bps6101",
     nama: "Adi Rakhmat Putranto, S.T",
     pangkat_golongan: "Penata Tingkat I/III/d",
     jabatan: "Statistisi Ahli Muda (PPK)",
@@ -66,6 +76,8 @@ export const PEGAWAI_LIST = [
   {
     nip_baru: "198510202009021003",
     nip_lama: "340050093",
+    username: "fauzan",
+    password: "bps6101",
     nama: "Fauzan Azim, SST",
     pangkat_golongan: "Penata Tingkat I/III/d",
     jabatan: "Statistisi Ahli Pertama",
@@ -77,6 +89,8 @@ export const PEGAWAI_LIST = [
   {
     nip_baru: "198507042010031003",
     nip_lama: "340053785",
+    username: "firmansyah",
+    password: "bps6101",
     nama: "Firmansyah, S.Si",
     pangkat_golongan: "Penata Tingkat I/III/d",
     jabatan: "Statistisi Ahli Muda",
@@ -88,6 +102,8 @@ export const PEGAWAI_LIST = [
   {
     nip_baru: "197911132011011004",
     nip_lama: "340055270",
+    username: "andi.noviantoni",
+    password: "bps6101",
     nama: "Andi Noviantoni, S.P.",
     pangkat_golongan: "Penata Tingkat I/III/d",
     jabatan: "Statistisi Ahli Muda",
@@ -99,6 +115,8 @@ export const PEGAWAI_LIST = [
   {
     nip_baru: "198406102011012028",
     nip_lama: "340055293",
+    username: "nuri.hayana",
+    password: "bps6101",
     nama: "Nuri Hayana, S.Si.",
     pangkat_golongan: "Penata/III/c",
     jabatan: "Statistisi Ahli Muda",
@@ -110,6 +128,8 @@ export const PEGAWAI_LIST = [
   {
     nip_baru: "199702272019012001",
     nip_lama: "340058741",
+    username: "fitria.w",
+    password: "bps6101",
     nama: "Fitria Wulandari, S.Tr.Stat.",
     pangkat_golongan: "Penata Muda Tingkat I/III/b",
     jabatan: "Statistisi Ahli Pertama (PPSPM)",
@@ -121,6 +141,8 @@ export const PEGAWAI_LIST = [
   {
     nip_baru: "199108102019032001",
     nip_lama: "340059078",
+    username: "ria.hayatun",
+    password: "bps6101",
     nama: "Ria Hayatun Nur, S.Stat., M.Si",
     pangkat_golongan: "Penata Muda Tingkat I/III/b",
     jabatan: "Statistisi Ahli Pertama",
@@ -132,6 +154,8 @@ export const PEGAWAI_LIST = [
   {
     nip_baru: "200006272022011006",
     nip_lama: "340060580",
+    username: "dhimas.yuzi",
+    password: "bps6101",
     nama: "Dhimas Yuzi Alfarizzi, S.Tr.Stat.",
     pangkat_golongan: "Penata Muda Tingkat I/III/b",
     jabatan: "Statistisi Ahli Pertama (Verifikator)",
@@ -143,6 +167,8 @@ export const PEGAWAI_LIST = [
   {
     nip_baru: "199901182022012002",
     nip_lama: "340060832",
+    username: "nurhidayatul",
+    password: "bps6101",
     nama: "Nurhidayatul Fitri, S.Tr.Stat.",
     pangkat_golongan: "Penata Muda Tingkat I/III/b",
     jabatan: "Statistisi Ahli Pertama",
@@ -154,6 +180,8 @@ export const PEGAWAI_LIST = [
   {
     nip_baru: "200010082023022002",
     nip_lama: "340061663",
+    username: "alifah.zalfa",
+    password: "bps6101",
     nama: "Alifah Zalfa Azizah, S.Tr.Stat.",
     pangkat_golongan: "Penata Muda/ III/a",
     jabatan: "Statistisi Ahli Pertama",
@@ -165,6 +193,8 @@ export const PEGAWAI_LIST = [
   {
     nip_baru: "200003232023022003",
     nip_lama: "340062067",
+    username: "talitha",
+    password: "bps6101",
     nama: "Talitha Nabila Saifana, S.Tr.Stat.",
     pangkat_golongan: "Penata Muda/ III/a",
     jabatan: "Pranata Komputer Ahli Pertama",
@@ -176,6 +206,8 @@ export const PEGAWAI_LIST = [
   {
     nip_baru: "200001052023102001",
     nip_lama: "340062415",
+    username: "dwi.karunia",
+    password: "bps6101",
     nama: "Dwi Karunia Syaputri, S.Tr.Stat.",
     pangkat_golongan: "Penata Muda/ III/a",
     jabatan: "Pranata Komputer Ahli Pertama",
@@ -187,6 +219,8 @@ export const PEGAWAI_LIST = [
   {
     nip_baru: "200106012024122001",
     nip_lama: "340063600",
+    username: "zahra",
+    password: "bps6101",
     nama: "Zahra Maharani, S.Tr.Stat",
     pangkat_golongan: "Penata Muda/ III/a",
     jabatan: "Statistisi Ahli Pertama",
@@ -198,6 +232,8 @@ export const PEGAWAI_LIST = [
   {
     nip_baru: "199811282022032007",
     nip_lama: "340061238",
+    username: "dermawati",
+    password: "bps6101",
     nama: "Dermawati Rematos Siahaan, A.Md.T",
     pangkat_golongan: "Pengatur Tk I/II/d",
     jabatan: "Statistisi Terampil",
@@ -209,6 +245,8 @@ export const PEGAWAI_LIST = [
   {
     nip_baru: "199904212022031005",
     nip_lama: "340061436",
+    username: "reynaldi",
+    password: "bps6101",
     nama: "Muhammad Reynaldi, A.Md",
     pangkat_golongan: "Pengatur/II/c",
     jabatan: "Statistisi Terampil",
@@ -220,6 +258,8 @@ export const PEGAWAI_LIST = [
   {
     nip_baru: "198010232025211025",
     nip_lama: "340065717",
+    username: "suhaimi",
+    password: "bps6101",
     nama: "Suhaimi, S.Mn",
     pangkat_golongan: "IX",
     jabatan: "Penata Layanan Operasional",
@@ -231,6 +271,8 @@ export const PEGAWAI_LIST = [
   {
     nip_baru: "200202192026032001",
     nip_lama: "340066191",
+    username: "diva.maharani",
+    password: "bps6101",
     nama: "Diva Maharani Basuki, S.Tr.Stat.",
     pangkat_golongan: "Penata Muda/ III/a",
     jabatan: "Statistisi Ahli Pertama",
@@ -242,6 +284,8 @@ export const PEGAWAI_LIST = [
   {
     nip_baru: "199405122017012001",
     nip_lama: "340057751",
+    username: "ade.wahyu",
+    password: "bps6101",
     nama: "Ade Wahyu Pratama Putri, SST",
     pangkat_golongan: "Penata/III/c",
     jabatan: "Kasubbag Umum",
@@ -253,6 +297,8 @@ export const PEGAWAI_LIST = [
   {
     nip_baru: "198210202011012009",
     nip_lama: "340055288",
+    username: "lasmi",
+    password: "bps6101",
     nama: "Lasmi, A.Md.",
     pangkat_golongan: "Penata Muda Tk.I/III/b",
     jabatan: "Statistisi Penyelia",
@@ -264,6 +310,8 @@ export const PEGAWAI_LIST = [
   {
     nip_baru: "200207292025062001",
     nip_lama: "340063748",
+    username: "erika",
+    password: "bps6101",
     nama: "Erika Anastasia Putri, A.Md.Ak",
     pangkat_golongan: "Pengatur/II/c",
     jabatan: "Pranata Keuangan APBN (Bendahara)",
@@ -275,6 +323,8 @@ export const PEGAWAI_LIST = [
   {
     nip_baru: "198007042025211030",
     nip_lama: "340065250",
+    username: "mursalin",
+    password: "bps6101",
     nama: "Mursalin",
     pangkat_golongan: "V",
     jabatan: "Operator Layanan Operasional",
@@ -286,6 +336,8 @@ export const PEGAWAI_LIST = [
   {
     nip_baru: "198606032025211064",
     nip_lama: "340065329",
+    username: "nurdiyanto",
+    password: "bps6101",
     nama: "Nurdiyanto",
     pangkat_golongan: "V",
     jabatan: "Operator Layanan Operasional",

@@ -22,7 +22,8 @@ import {
   ChevronRight,
   ShieldCheck,
   Crown,
-  Lock
+  Lock,
+  UserCircle
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -40,6 +41,7 @@ export default function Sidebar() {
       group: "MAIN MENU",
       items: [
         { name: "Dasbor", path: "/dashboard", icon: LayoutDashboard },
+        { name: "Profil & Keamanan Akun", path: "/profile", icon: UserCircle },
         { name: "Kalender Kegiatan & Perjadin", path: "/kalender-perjadin", icon: Calendar },
         { name: "Matriks & Rekap Perjadin", path: "/matriks-perjadin", icon: Users2 },
       ]
@@ -84,7 +86,7 @@ export default function Sidebar() {
     {
       group: "MASTER DATA & SISTEM",
       items: [
-        { name: "Data Pegawai BPS Sambas", path: "/pegawai", icon: UserSquare2 },
+        { name: "Manajemen Pegawai & Akun", path: "/pegawai", icon: UserSquare2 },
         { name: "Master Wilayah & SLS", path: "/master-wilayah", icon: MapPin },
         { name: "Master Kode Akun", path: "/master-akun", icon: Tags },
         { name: "Pengaturan & Hak Akses", path: "/pengaturan", icon: Settings },

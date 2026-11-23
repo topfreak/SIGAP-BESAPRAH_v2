@@ -7,10 +7,12 @@
 -- 1. EXTENSION UUID
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- 2. TABEL PEGAWAI (25 Pegawai BPS Sambas + Superadmin)
+-- 2. TABEL PEGAWAI (25 Pegawai BPS Sambas + Superadmin + Kredensial Login)
 CREATE TABLE IF NOT EXISTS pegawai (
     nip_baru VARCHAR(20) PRIMARY KEY,
     nip_lama VARCHAR(15),
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL DEFAULT 'bps6101',
     nama VARCHAR(150) NOT NULL,
     pangkat_golongan VARCHAR(50),
     jabatan VARCHAR(100),
@@ -20,6 +22,9 @@ CREATE TABLE IF NOT EXISTS pegawai (
     email VARCHAR(100) UNIQUE,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
+
+-- Index username untuk performa query autentikasi
+CREATE INDEX IF NOT EXISTS idx_pegawai_username ON pegawai(LOWER(username));
 
 -- 3. TABEL MASTER KODE AKUN (MAK)
 CREATE TABLE IF NOT EXISTS kode_akun (
