@@ -707,24 +707,25 @@ export const KODE_AKUN_LIST = [
 ];
 
 export const KECAMATAN_SAMBAS = [
-  "Sambas",
-  "Tebas",
-  "Teluk Keramat",
-  "Jawai",
-  "Jawai Selatan",
-  "Paloh",
-  "Sejangkung",
-  "Subah",
-  "Sebawi",
-  "Semparuk",
-  "Tekarang",
-  "Tangaran",
   "Selakau",
   "Selakau Timur",
+  "Pemangkat",
+  "Semparuk",
   "Salatiga",
+  "Tebas",
+  "Tekarang",
+  "Sambas",
+  "Subah",
+  "Sebawi",
+  "Sajad",
+  "Jawai",
+  "Jawai Selatan",
+  "Teluk Keramat",
   "Galing",
+  "Tangaran",
+  "Sejangkung",
   "Sajingan Besar",
-  "Sajad"
+  "Paloh"
 ];
 
 // Data riil 20 transaksi awal dari SPJ Proses 2026.xlsx dengan detail Meja Berkas
