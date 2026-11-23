@@ -366,9 +366,9 @@ export function AuthProvider({ children }) {
     setTransactions(prev => prev.map(t => {
       if (t.id === id) {
         let meja = t.meja_berkas;
-        if (updates.status_dokumen === 'Di PPK') meja = 'Meja PPK (Peninjauan Komitmen)';
-        else if (updates.status_dokumen === 'Di PPSPM') meja = 'Meja PPSPM (Pengujian SPM)';
-        else if (updates.status_dokumen === 'Di Bendahara') meja = 'Meja Bendahara (Pencairan Dana)';
+        if (updates.status_dokumen === 'Di PPK') meja = 'Meja PPK (Peninjauan Komitmen & SPP)';
+        else if (updates.status_dokumen === 'Di Bendahara') meja = 'Meja Bendahara (Verifikasi Kuitansi, Pajak & Kas)';
+        else if (updates.status_dokumen === 'Di PPSPM') meja = 'Meja PPSPM (Pengujian Formal & Penerbitan SPM)';
         else if (updates.status_dokumen === 'Perlu Perbaikan') meja = 'Meja PJ Kegiatan (Revisi Dokumen)';
         else if (updates.status_dokumen === 'Selesai') meja = 'Meja Arsip Keuangan (Lunas / SP2D Terbit)';
 

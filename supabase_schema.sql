@@ -61,9 +61,9 @@ CREATE TABLE IF NOT EXISTS pengajuan_spj (
     jumlah_pengeluaran NUMERIC(15,2) DEFAULT 0, -- Bruto
     jumlah_potongan NUMERIC(15,2) DEFAULT 0, -- Total Pajak
     jumlah_pembayaran NUMERIC(15,2) DEFAULT 0, -- Netto
-    status_dokumen VARCHAR(40) DEFAULT 'Draft', -- 'Draft', 'Di PPK', 'Di PPSPM', 'Di Bendahara', 'Perlu Perbaikan', 'Selesai', 'Ditolak'
+    status_dokumen VARCHAR(40) DEFAULT 'Draft', -- Alur: 'Draft' -> 'Di PPK' -> 'Di Bendahara' -> 'Di PPSPM' -> 'Selesai' (atau 'Perlu Perbaikan')
     posisi_dokumen VARCHAR(40) DEFAULT 'Di PPK',
-    meja_berkas VARCHAR(100) DEFAULT 'Meja PPK (Peninjauan Komitmen)', -- Keterangan Meja Fisik/Digital
+    meja_berkas VARCHAR(100) DEFAULT 'Meja PPK (Peninjauan Komitmen & SPP)', -- Meja Berkas: Meja PJ -> Meja PPK -> Meja Bendahara -> Meja PPSPM -> Meja Arsip
     kelengkapan_dokumen VARCHAR(30) DEFAULT 'BELUM LENGKAP', -- 'LENGKAP' / 'BELUM LENGKAP'
     tanggal_terima DATE DEFAULT CURRENT_DATE,
     tanggal_proses DATE,

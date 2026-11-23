@@ -1,5 +1,6 @@
 /**
  * SIGAP BESAPRAH - Wewenang Aksi Berdasarkan Posisi Meja Berkas
+ * Alur Standar Kedinasan: PJ -> PPK -> Bendahara -> PPSPM -> Arsip
  * Chain of Custody & Desk-Based Role Based Access Control (RBAC)
  * BPS Kabupaten Sambas
  */
@@ -17,17 +18,17 @@ export const DESK_CONFIG = {
     activeRoleLabel: 'Pejabat Pembuat Komitmen (PPK)',
     color: 'bg-purple-100 text-purple-900 border-purple-300'
   },
-  'Di PPSPM': {
-    deskName: 'Meja PPSPM (Pengujian & Penerbitan SPM)',
-    activeRole: 'ppspm',
-    activeRoleLabel: 'Pejabat Penandatangan SPM (PPSPM)',
-    color: 'bg-indigo-100 text-indigo-900 border-indigo-300'
-  },
   'Di Bendahara': {
-    deskName: 'Meja Bendahara (Pencairan Dana & Pajak)',
+    deskName: 'Meja Bendahara (Verifikasi Kuitansi, Pajak & Kas)',
     activeRole: 'bendahara',
     activeRoleLabel: 'Bendahara Pengeluaran',
     color: 'bg-amber-100 text-amber-900 border-amber-300'
+  },
+  'Di PPSPM': {
+    deskName: 'Meja PPSPM (Pengujian Formal & Penerbitan SPM)',
+    activeRole: 'ppspm',
+    activeRoleLabel: 'Pejabat Penandatangan SPM (PPSPM)',
+    color: 'bg-indigo-100 text-indigo-900 border-indigo-300'
   },
   'Perlu Perbaikan': {
     deskName: 'Meja PJ Kegiatan (Revisi Dokumen Kekurangan)',
@@ -45,6 +46,7 @@ export const DESK_CONFIG = {
 
 /**
  * Evaluasi apakah pengguna berhak memberi aksi pada transaksi tertentu
+ * Alur: PJ -> PPK -> Bendahara -> PPSPM -> Arsip
  */
 export function getDeskActionAuthority(currentUser, transaction) {
   if (!currentUser || !transaction) {
@@ -81,15 +83,14 @@ export function getDeskActionAuthority(currentUser, transaction) {
       deskName: deskInfo.deskName,
       activeRole: deskInfo.activeRole,
       activeRoleLabel: deskInfo.activeRoleLabel,
-      reason: 'Berkas telah selesai diproses (Lunas / SP2D terbit) dan telah diarsipkan secara permanen. Berkas bersifat Read-Only.',
+      reason: 'Berkas telah selesai diproses (Lunas / SPM-SP2D terbit) dan telah disimpan di Meja Arsip Keuangan secara permanen (Read-Only).',
       allowedActions: []
     };
   }
 
-  // Evaluasi per tahapan meja
+  // Evaluasi per tahapan meja: PJ -> PPK -> Bendahara -> PPSPM -> Arsip
   switch (status) {
     case 'Draft': {
-      // Boleh jika user adalah PJ Kegiatan transaksi, staf pembuat draf, atau berperan pj_kegiatan
       const isOwner = currentUser.nip_baru === transaction.pj_kegiatan_nip || 
                       currentUser.nip_baru === transaction.pengaju_nip ||
                       role === 'pj_kegiatan';
@@ -107,7 +108,7 @@ export function getDeskActionAuthority(currentUser, transaction) {
         deskName: deskInfo.deskName,
         activeRole: 'pj_kegiatan',
         activeRoleLabel: 'PJ Kegiatan / Pengaju',
-        reason: `Berkas masih berstatus draf di Meja PJ Kegiatan (${transaction.pj_nama || 'Tim Pemohon'}). Hanya pembuat draf atau PJ Kegiatan yang dapat memproses dan mengajukan berkas ini.`
+        reason: `Berkas masih berupa draf di Meja PJ Kegiatan (${transaction.pj_nama || 'Tim Pemohon'}). Hanya pembuat draf atau PJ Kegiatan yang dapat memproses dan mengajukan berkas ini.`
       };
     }
 
@@ -118,7 +119,8 @@ export function getDeskActionAuthority(currentUser, transaction) {
           deskName: deskInfo.deskName,
           activeRole: 'ppk',
           activeRoleLabel: 'Pejabat Pembuat Komitmen (PPK)',
-          allowedActions: ['APPROVE_PPK', 'REQUEST_REVISION']
+          // Dari PPK, berkas disetujui dan diteruskan ke Meja Bendahara
+          allowedActions: ['APPROVE_PPK_TO_BENDAHARA', 'REQUEST_REVISION']
         };
       }
       return {
@@ -126,26 +128,7 @@ export function getDeskActionAuthority(currentUser, transaction) {
         deskName: deskInfo.deskName,
         activeRole: 'ppk',
         activeRoleLabel: 'Pejabat Pembuat Komitmen (PPK)',
-        reason: `Berkas saat ini sedang berada di Meja PPK (Peninjauan Komitmen). Anda sedang masuk sebagai ${currentUser.nama} (${role.toUpperCase()}). Anda baru dapat memproses berkas ini setelah berkas disetujui PPK dan diteruskan ke tahapan Anda.`
-      };
-    }
-
-    case 'Di PPSPM': {
-      if (role === 'ppspm' || role === 'kpa') {
-        return {
-          canAct: true,
-          deskName: deskInfo.deskName,
-          activeRole: 'ppspm',
-          activeRoleLabel: 'Pejabat Penandatangan SPM (PPSPM)',
-          allowedActions: ['APPROVE_PPSPM', 'REJECT_PPSPM']
-        };
-      }
-      return {
-        canAct: false,
-        deskName: deskInfo.deskName,
-        activeRole: 'ppspm',
-        activeRoleLabel: 'Pejabat Penandatangan SPM (PPSPM)',
-        reason: `Berkas saat ini sedang dalam pengujian SPM di Meja PPSPM. Pejabat lain belum memiliki wewenang untuk memproses berkas ini.`
+        reason: `Berkas saat ini sedang ditinjau komitmennya di Meja PPK. Anda sedang masuk sebagai ${currentUser.nama} (${role.toUpperCase()}). Berkas belum disetujui PPK untuk diteruskan ke Meja Bendahara.`
       };
     }
 
@@ -156,7 +139,8 @@ export function getDeskActionAuthority(currentUser, transaction) {
           deskName: deskInfo.deskName,
           activeRole: 'bendahara',
           activeRoleLabel: 'Bendahara Pengeluaran',
-          allowedActions: ['PAY_BENDAHARA']
+          // Dari Bendahara, berkas diverifikasi pajak & kas lalu diteruskan ke Meja PPSPM
+          allowedActions: ['VERIFY_BENDAHARA_TO_PPSPM', 'RETURN_TO_PPK']
         };
       }
       return {
@@ -164,7 +148,27 @@ export function getDeskActionAuthority(currentUser, transaction) {
         deskName: deskInfo.deskName,
         activeRole: 'bendahara',
         activeRoleLabel: 'Bendahara Pengeluaran',
-        reason: `Berkas saat ini sedang berada di Meja Bendahara (Pencairan Dana). Hanya Bendahara Pengeluaran yang berwenang melakukan konfirmasi pencairan dan membayarkan dana.`
+        reason: `Berkas saat ini sedang diverifikasi bukti pengeluaran dan perhitungan pajaknya di Meja Bendahara Pengeluaran. Pejabat lain belum memiliki wewenang aksi pada tahap ini.`
+      };
+    }
+
+    case 'Di PPSPM': {
+      if (role === 'ppspm' || role === 'kpa') {
+        return {
+          canAct: true,
+          deskName: deskInfo.deskName,
+          activeRole: 'ppspm',
+          activeRoleLabel: 'Pejabat Penandatangan SPM (PPSPM)',
+          // Dari PPSPM, pengujian akhir dilakukan dan SPM diterbitkan -> Selesai / Arsip
+          allowedActions: ['APPROVE_PPSPM_TO_ARSIP', 'REJECT_TO_BENDAHARA']
+        };
+      }
+      return {
+        canAct: false,
+        deskName: deskInfo.deskName,
+        activeRole: 'ppspm',
+        activeRoleLabel: 'Pejabat Penandatangan SPM (PPSPM)',
+        reason: `Berkas saat ini sedang dalam pengujian SPM akhir di Meja PPSPM. Anda baru dapat melihat berkas ini setelah SPM disahkan.`
       };
     }
 

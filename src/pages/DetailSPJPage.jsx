@@ -58,15 +58,15 @@ export default function DetailSPJPage() {
     setCheckedDocs(prev => ({ ...prev, [doc]: !prev[doc] }));
   };
 
-  // Actions per Desk
+  // Actions per Desk: PJ -> PPK -> Bendahara -> PPSPM -> Arsip
   const handleApprovePPK = () => {
     updateTransactionStatus(transaction.id, {
-      status_dokumen: 'Di PPSPM',
-      posisi_dokumen: 'Di PPSPM',
-      meja_berkas: 'Meja PPSPM (Pengujian SPM)',
-      review_ppk: reviewNote ? `Disetujui: ${reviewNote}` : 'Komitmen disetujui tanpa catatan oleh PPK'
+      status_dokumen: 'Di Bendahara',
+      posisi_dokumen: 'Di Bendahara',
+      meja_berkas: 'Meja Bendahara (Verifikasi Kuitansi, Pajak & Kas)',
+      review_ppk: reviewNote ? `Disetujui PPK: ${reviewNote}` : 'Komitmen disetujui PPK, diteruskan ke Meja Bendahara'
     });
-    setSuccessNotice('Dokumen berhasil disetujui PPK dan dipindahkan ke Meja PPSPM.');
+    setSuccessNotice('Dokumen berhasil disetujui PPK dan dipindahkan ke Meja Bendahara.');
     setReviewNote('');
     setTimeout(() => setSuccessNotice(''), 4000);
   };
@@ -88,40 +88,57 @@ export default function DetailSPJPage() {
     setTimeout(() => setSuccessNotice(''), 4000);
   };
 
+  const handleApproveBendahara = () => {
+    updateTransactionStatus(transaction.id, {
+      status_dokumen: 'Di PPSPM',
+      posisi_dokumen: 'Di PPSPM',
+      meja_berkas: 'Meja PPSPM (Pengujian Formal & Penerbitan SPM)',
+      review_bdh: reviewNote ? `Verifikasi Pajak & Kas: ${reviewNote}` : 'Kuitansi & potongan pajak lengkap, diteruskan ke Meja PPSPM'
+    });
+    setSuccessNotice('Dokumen diverifikasi Bendahara Pengeluaran dan diteruskan ke Meja PPSPM untuk pengujian SPM.');
+    setReviewNote('');
+    setTimeout(() => setSuccessNotice(''), 4000);
+  };
+
+  const handleMintaPerbaikanBendahara = () => {
+    if (!reviewNote.trim()) {
+      alert('Mohon tuliskan catatan kekurangan kuitansi atau perhitungan pajak.');
+      return;
+    }
+    updateTransactionStatus(transaction.id, {
+      status_dokumen: 'Perlu Perbaikan',
+      posisi_dokumen: 'Perlu Revisi',
+      meja_berkas: 'Meja PJ Kegiatan (Revisi Dokumen)',
+      catatan_kekurangan: `Catatan Bendahara: ${reviewNote}`,
+      review_bdh: `Perlu Perbaikan: ${reviewNote}`
+    });
+    setSuccessNotice('Dokumen dikembalikan ke Meja PJ Kegiatan untuk perbaikan kuitansi/pajak.');
+    setReviewNote('');
+    setTimeout(() => setSuccessNotice(''), 4000);
+  };
+
   const handleApprovePPSPM = () => {
-    updateTransactionStatus(transaction.id, {
-      status_dokumen: 'Di Bendahara',
-      posisi_dokumen: 'Di Bendahara',
-      meja_berkas: 'Meja Bendahara (Pencairan Dana)',
-      review_ppspm: reviewNote ? `SPM Diterbitkan: ${reviewNote}` : 'SPM resmi diterbitkan oleh PPSPM'
-    });
-    setSuccessNotice('SPM berhasil diterbitkan dan dokumen diteruskan ke Meja Bendahara Pengeluaran.');
-    setReviewNote('');
-    setTimeout(() => setSuccessNotice(''), 4000);
-  };
-
-  const handleTolakPPSPM = () => {
-    updateTransactionStatus(transaction.id, {
-      status_dokumen: 'Di PPK',
-      posisi_dokumen: 'Di PPK',
-      meja_berkas: 'Meja PPK (Peninjauan Komitmen)',
-      review_ppspm: reviewNote ? `Ditolak PPSPM: ${reviewNote}` : 'SPM ditolak pengujian, dikembalikan ke PPK'
-    });
-    setSuccessNotice('SPM ditolak dan dokumen dikembalikan ke Meja PPK.');
-    setReviewNote('');
-    setTimeout(() => setSuccessNotice(''), 4000);
-  };
-
-  const handleBayarBendahara = () => {
     updateTransactionStatus(transaction.id, {
       status_dokumen: 'Selesai',
       posisi_dokumen: 'Selesai',
       meja_berkas: 'Meja Arsip Keuangan (Lunas / SP2D Terbit)',
       kelengkapan_dokumen: 'LENGKAP',
       tanggal_sp2d: new Date().toISOString().split('T')[0],
-      review_bdh: reviewNote ? `Lunas: ${reviewNote}` : 'Telah dicairkan / SP2D terbit dan disimpan di Meja Arsip'
+      review_ppspm: reviewNote ? `SPM Diterbitkan: ${reviewNote}` : 'SPM resmi diterbitkan oleh PPSPM & disahkan lunas'
     });
-    setSuccessNotice('Pembayaran berhasil dikonfirmasi lunas dan berkas diarsipkan.');
+    setSuccessNotice('SPM resmi diterbitkan dan berkas disahkan lunas serta disimpan di Meja Arsip.');
+    setReviewNote('');
+    setTimeout(() => setSuccessNotice(''), 4000);
+  };
+
+  const handleTolakPPSPM = () => {
+    updateTransactionStatus(transaction.id, {
+      status_dokumen: 'Di Bendahara',
+      posisi_dokumen: 'Di Bendahara',
+      meja_berkas: 'Meja Bendahara (Verifikasi Kuitansi, Pajak & Kas)',
+      review_ppspm: reviewNote ? `Ditolak PPSPM: ${reviewNote}` : 'SPM belum memenuhi syarat pengujian, dikembalikan ke Bendahara'
+    });
+    setSuccessNotice('SPM ditolak dan dokumen dikembalikan ke Meja Bendahara.');
     setReviewNote('');
     setTimeout(() => setSuccessNotice(''), 4000);
   };
@@ -130,26 +147,26 @@ export default function DetailSPJPage() {
     updateTransactionStatus(transaction.id, {
       status_dokumen: 'Di PPK',
       posisi_dokumen: 'Di PPK',
-      meja_berkas: 'Meja PPK (Peninjauan Komitmen)',
+      meja_berkas: 'Meja PPK (Peninjauan Komitmen & SPP)',
       catatan_kekurangan: '',
       review_ppk: reviewNote ? `Perbaikan dari PJ: ${reviewNote}` : 'Dokumen perbaikan telah diunggah oleh PJ'
     });
-    setSuccessNotice('Perbaikan dokumen berhasil diajukan kembali ke Meja PPK.');
+    setSuccessNotice('Dokumen berhasil diajukan ke Meja PPK.');
     setReviewNote('');
     setTimeout(() => setSuccessNotice(''), 4000);
   };
 
-  // Steps definition for Chain of Custody Timeline
+  // Steps definition for Chain of Custody Timeline: PJ -> PPK -> Bendahara -> PPSPM -> Arsip
   const timelineSteps = [
     { key: 'Draft', label: '1. Draf PJ' },
     { key: 'Di PPK', label: '2. Meja PPK' },
-    { key: 'Di PPSPM', label: '3. Meja PPSPM' },
-    { key: 'Di Bendahara', label: '4. Meja Bendahara' },
+    { key: 'Di Bendahara', label: '3. Meja Bendahara' },
+    { key: 'Di PPSPM', label: '4. Meja PPSPM' },
     { key: 'Selesai', label: '5. Meja Arsip (Lunas)' }
   ];
 
   const getStepStatus = (stepKey) => {
-    const order = ['Draft', 'Di PPK', 'Di PPSPM', 'Di Bendahara', 'Selesai'];
+    const order = ['Draft', 'Di PPK', 'Di Bendahara', 'Di PPSPM', 'Selesai'];
     const currentIdx = order.indexOf(transaction.status_dokumen === 'Perlu Perbaikan' ? 'Draft' : transaction.status_dokumen);
     const targetIdx = order.indexOf(stepKey);
 
@@ -363,7 +380,7 @@ export default function DetailSPJPage() {
 
             {/* Tombol Aksi Spesifik Meja */}
             <div className="flex flex-wrap items-center gap-3 pt-1">
-              {/* 1. AKSI DI MEJA PPK */}
+              {/* 1. AKSI DI MEJA PPK (Dari PPK diteruskan ke Meja Bendahara) */}
               {transaction.status_dokumen === 'Di PPK' && (
                 <>
                   <button
@@ -371,7 +388,7 @@ export default function DetailSPJPage() {
                     className="px-5 py-2.5 rounded-xl bg-purple-700 hover:bg-purple-800 text-white font-bold text-xs flex items-center gap-2 shadow-md transition"
                   >
                     <CheckCircle2 className="w-4 h-4 text-amber-300" />
-                    <span>Setujui Sebagai PPK (Teruskan ke Meja PPSPM)</span>
+                    <span>Setujui Sebagai PPK (Teruskan ke Meja Bendahara)</span>
                   </button>
 
                   <button
@@ -384,15 +401,36 @@ export default function DetailSPJPage() {
                 </>
               )}
 
-              {/* 2. AKSI DI MEJA PPSPM */}
+              {/* 2. AKSI DI MEJA BENDAHARA (Dari Bendahara diteruskan ke Meja PPSPM) */}
+              {transaction.status_dokumen === 'Di Bendahara' && (
+                <>
+                  <button
+                    onClick={handleApproveBendahara}
+                    className="px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-extrabold text-xs flex items-center gap-2 shadow-md transition"
+                  >
+                    <CheckCircle2 className="w-4 h-4 text-amber-200" />
+                    <span>Verifikasi Kuitansi & Pajak (Kirim ke Meja PPSPM)</span>
+                  </button>
+
+                  <button
+                    onClick={handleMintaPerbaikanBendahara}
+                    className="px-4 py-2.5 rounded-xl bg-amber-100 hover:bg-amber-200 text-amber-900 font-bold text-xs flex items-center gap-1.5 transition border border-amber-200"
+                  >
+                    <AlertCircle className="w-4 h-4 text-amber-700" />
+                    <span>Kembalikan ke Meja PJ (Revisi Kuitansi/Pajak)</span>
+                  </button>
+                </>
+              )}
+
+              {/* 3. AKSI DI MEJA PPSPM (Dari PPSPM diterbitkan SPM & disimpan ke Arsip) */}
               {transaction.status_dokumen === 'Di PPSPM' && (
                 <>
                   <button
                     onClick={handleApprovePPSPM}
-                    className="px-5 py-2.5 rounded-xl bg-indigo-700 hover:bg-indigo-800 text-white font-bold text-xs flex items-center gap-2 shadow-md transition"
+                    className="px-6 py-2.5 rounded-xl bg-indigo-700 hover:bg-indigo-800 text-white font-extrabold text-xs flex items-center gap-2 shadow-md transition"
                   >
                     <FileText className="w-4 h-4 text-indigo-200" />
-                    <span>Terbitkan SPM (Kirim ke Meja Bendahara)</span>
+                    <span>Terbitkan SPM & Sahkan (Simpan ke Meja Arsip)</span>
                   </button>
 
                   <button
@@ -400,20 +438,9 @@ export default function DetailSPJPage() {
                     className="px-4 py-2.5 rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-900 font-bold text-xs flex items-center gap-1.5 transition border border-rose-200"
                   >
                     <RotateCcw className="w-4 h-4 text-rose-700" />
-                    <span>Tolak & Kembalikan ke Meja PPK</span>
+                    <span>Tolak & Kembalikan ke Meja Bendahara</span>
                   </button>
                 </>
-              )}
-
-              {/* 3. AKSI DI MEJA BENDAHARA */}
-              {transaction.status_dokumen === 'Di Bendahara' && (
-                <button
-                  onClick={handleBayarBendahara}
-                  className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs flex items-center gap-2 shadow-md transition"
-                >
-                  <Coins className="w-4 h-4 text-emerald-200" />
-                  <span>Konfirmasi Pencairan Dana & Simpan ke Arsip</span>
-                </button>
               )}
 
               {/* 4. AKSI DI MEJA PJ (REVISI ATAU DRAF) */}

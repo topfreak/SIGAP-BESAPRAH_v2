@@ -44,14 +44,14 @@ export default function DaftarSPJPage() {
   const isSuperadmin = currentUser?.role === 'superadmin';
   const isPimpinanOrKeuangan = ['superadmin', 'kpa', 'ppk', 'ppspm', 'bendahara'].includes(currentUser?.role);
 
-  // Counts for tabs
+  // Counts for tabs (Alur: PJ -> PPK -> Bendahara -> PPSPM -> Arsip)
   const tabCounts = useMemo(() => {
     return {
       Semua: transactions.length,
       'Perlu Perbaikan': transactions.filter(t => t.status_dokumen === 'Perlu Perbaikan').length,
       'Di PPK': transactions.filter(t => t.status_dokumen === 'Di PPK').length,
-      'Di PPSPM': transactions.filter(t => t.status_dokumen === 'Di PPSPM').length,
       'Di Bendahara': transactions.filter(t => t.status_dokumen === 'Di Bendahara').length,
+      'Di PPSPM': transactions.filter(t => t.status_dokumen === 'Di PPSPM').length,
       'Selesai': transactions.filter(t => t.status_dokumen === 'Selesai').length,
     };
   }, [transactions]);
@@ -135,34 +135,35 @@ export default function DaftarSPJPage() {
 
       if (tx.status_dokumen === 'Di PPK' && (currentUser?.role === 'ppk' || isSuperadmin)) {
         updateTransactionStatus(id, {
-          status_dokumen: 'Di PPSPM',
-          posisi_dokumen: 'Di PPSPM',
-          meja_berkas: 'Meja PPSPM (Pengujian SPM)',
+          status_dokumen: 'Di Bendahara',
+          posisi_dokumen: 'Di Bendahara',
+          meja_berkas: 'Meja Bendahara (Verifikasi Kuitansi, Pajak & Kas)',
           review_ppk: 'Disetujui massal oleh PPK'
         });
         processedCount++;
-      } else if (tx.status_dokumen === 'Di PPSPM' && (currentUser?.role === 'ppspm' || currentUser?.role === 'kpa' || isSuperadmin)) {
+      } else if (tx.status_dokumen === 'Di Bendahara' && (currentUser?.role === 'bendahara' || isSuperadmin)) {
         updateTransactionStatus(id, {
-          status_dokumen: 'Di Bendahara',
-          posisi_dokumen: 'Di Bendahara',
-          meja_berkas: 'Meja Bendahara (Pencairan Dana)',
-          review_ppspm: 'Disetujui massal & SPM diterbitkan'
+          status_dokumen: 'Di PPSPM',
+          posisi_dokumen: 'Di PPSPM',
+          meja_berkas: 'Meja PPSPM (Pengujian Formal & Penerbitan SPM)',
+          review_bdh: 'Diverifikasi massal oleh Bendahara'
         });
         processedCount++;
-      } else if (tx.status_dokumen === 'Di Bendahara' && (currentUser?.role === 'bendahara' || isSuperadmin)) {
+      } else if (tx.status_dokumen === 'Di PPSPM' && (currentUser?.role === 'ppspm' || currentUser?.role === 'kpa' || isSuperadmin)) {
         updateTransactionStatus(id, {
           status_dokumen: 'Selesai',
           posisi_dokumen: 'Selesai',
           meja_berkas: 'Meja Arsip Keuangan (Lunas / SP2D Terbit)',
           kelengkapan_dokumen: 'LENGKAP',
-          review_bdh: 'Telah dicairkan / SP2D terbit'
+          tanggal_sp2d: new Date().toISOString().split('T')[0],
+          review_ppspm: 'SPM disahkan massal oleh PPSPM'
         });
         processedCount++;
       } else if (tx.status_dokumen === 'Draft' || tx.status_dokumen === 'Perlu Perbaikan') {
         updateTransactionStatus(id, {
           status_dokumen: 'Di PPK',
           posisi_dokumen: 'Di PPK',
-          meja_berkas: 'Meja PPK (Peninjauan Komitmen)',
+          meja_berkas: 'Meja PPK (Peninjauan Komitmen & SPP)',
           review_ppk: 'Diajukan massal oleh PJ'
         });
         processedCount++;
@@ -286,14 +287,14 @@ export default function DaftarSPJPage() {
         </div>
       )}
 
-      {/* Filter Tabs Bar (Semua, Perlu Perbaikan, PPK, PPSPM, Bendahara, Selesai) */}
+      {/* Filter Tabs Bar (Alur: PJ -> PPK -> Bendahara -> PPSPM -> Arsip) */}
       <div className="flex flex-wrap items-center gap-2 border-b border-purple-100 pb-2.5">
         {[
           { key: 'Semua', label: 'Semua Berkas' },
           { key: 'Perlu Perbaikan', label: 'Meja PJ (Perlu Revisi)' },
           { key: 'Di PPK', label: 'Meja PPK' },
-          { key: 'Di PPSPM', label: 'Meja PPSPM' },
           { key: 'Di Bendahara', label: 'Meja Bendahara' },
+          { key: 'Di PPSPM', label: 'Meja PPSPM' },
           { key: 'Selesai', label: 'Meja Arsip (Cair)' }
         ].map((tab) => {
           const isActive = activeTab === tab.key;
