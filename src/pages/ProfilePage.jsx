@@ -134,18 +134,29 @@ export default function ProfilePage() {
             </p>
 
             <div className="pt-2 flex flex-wrap items-center justify-center sm:justify-start gap-4 text-xs text-purple-200/90">
-              <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1 rounded-xl">
-                <Fingerprint className="w-3.5 h-3.5 text-amber-300" />
-                <span className="font-mono">NIP: {currentUser.nip_baru}</span>
-              </div>
-              <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1 rounded-xl">
-                <Users className="w-3.5 h-3.5 text-purple-300" />
-                <span>Tim: {currentUser.tim_kerja}</span>
-              </div>
-              <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1 rounded-xl">
-                <Mail className="w-3.5 h-3.5 text-emerald-300" />
-                <span>{currentUser.email}</span>
-              </div>
+              {currentUser.role === 'superadmin' ? (
+                <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1 rounded-xl">
+                  <ShieldCheck className="w-3.5 h-3.5 text-amber-300" />
+                  <span className="font-semibold text-amber-300">ADMINISTRATOR SISTEM (AKSES PENUH)</span>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1 rounded-xl">
+                    <Fingerprint className="w-3.5 h-3.5 text-amber-300" />
+                    <span className="font-mono">NIP: {currentUser.nip_baru}</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1 rounded-xl">
+                    <Users className="w-3.5 h-3.5 text-purple-300" />
+                    <span>Tim: {currentUser.tim_kerja || '-'}</span>
+                  </div>
+                  {currentUser.email && currentUser.email !== '-' && (
+                    <div className="flex items-center gap-1.5 bg-black/20 px-3 py-1 rounded-xl">
+                      <Mail className="w-3.5 h-3.5 text-emerald-300" />
+                      <span>{currentUser.email}</span>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -170,18 +181,22 @@ export default function ProfilePage() {
 
               <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50">
                 <span className="text-slate-500 font-medium">NIP Baru (18 Digit)</span>
-                <span className="font-mono font-semibold text-slate-800">{currentUser.nip_baru}</span>
+                <span className="font-mono font-semibold text-slate-800">
+                  {currentUser.role === 'superadmin' ? '-' : currentUser.nip_baru}
+                </span>
               </div>
 
               <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50">
                 <span className="text-slate-500 font-medium">NIP Lama</span>
-                <span className="font-mono font-semibold text-slate-800">{currentUser.nip_lama || '-'}</span>
+                <span className="font-mono font-semibold text-slate-800">
+                  {currentUser.role === 'superadmin' ? '-' : (currentUser.nip_lama || '-')}
+                </span>
               </div>
 
               <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50">
                 <span className="text-slate-500 font-medium">Status Kepegawaian</span>
                 <span className="font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
-                  {currentUser.status_pegawai || 'PNS'}
+                  {currentUser.role === 'superadmin' ? 'Administrator Sistem' : (currentUser.status_pegawai || 'PNS')}
                 </span>
               </div>
 

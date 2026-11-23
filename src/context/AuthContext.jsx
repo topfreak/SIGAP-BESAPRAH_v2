@@ -107,18 +107,19 @@ const ROLE_PERMISSIONS = {
 export function AuthProvider({ children }) {
   // Master users list (disimpan di localStorage atau fallback ke PEGAWAI_LIST)
   const [users, setUsers] = useState(() => {
-    const saved = localStorage.getItem('sigap_users_v5');
+    const saved = localStorage.getItem('sigap_users_v6');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       } catch (e) {
-        console.error('Error parsing sigap_users_v5:', e);
+        console.error('Error parsing sigap_users_v6:', e);
       }
     }
     // Bersihkan versi lama agar data terbaru langsung aktif
     localStorage.removeItem('sigap_users');
     localStorage.removeItem('sigap_users_v4');
+    localStorage.removeItem('sigap_users_v5');
     return PEGAWAI_LIST;
   });
 
@@ -157,7 +158,7 @@ export function AuthProvider({ children }) {
 
   // Save changes to localStorage
   useEffect(() => {
-    localStorage.setItem('sigap_users_v5', JSON.stringify(users));
+    localStorage.setItem('sigap_users_v6', JSON.stringify(users));
   }, [users]);
 
   useEffect(() => {

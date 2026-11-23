@@ -7,7 +7,7 @@
  */
 
 export const PEGAWAI_LIST = [
-  // 1. Superadmin Khusus Pengelola Sistem (Tanpa NIP, Pangkat/Gol, Jabatan Fungsional/Keuangan)
+  // 1. Superadmin Khusus Pengelola Sistem (Tanpa NIP, Pangkat/Gol, Jabatan Fungsional/Keuangan, dan Email)
   {
     nip_baru: "-",
     nip_lama: "-",
@@ -20,7 +20,7 @@ export const PEGAWAI_LIST = [
     jabatan_keuangan: "-",
     tim_kerja: "-",
     role: "superadmin",
-    email: "superadmin.sambas@bps.go.id",
+    email: "-",
     has_account: true,
     status_akun: "Aktif"
   },

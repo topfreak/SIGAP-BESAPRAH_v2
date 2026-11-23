@@ -341,7 +341,7 @@ export default function MasterPegawaiPage() {
                             {p.status_pegawai}
                           </span>
                         ) : null}
-                        {p.email && (
+                        {!isAdmin && p.email && p.email !== '-' && (
                           <span className="text-[10px] text-slate-400 truncate max-w-[140px] flex items-center gap-1">
                             <Mail className="w-2.5 h-2.5 text-purple-400" />
                             {p.email}
