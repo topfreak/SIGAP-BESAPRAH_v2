@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { PEGAWAI_LIST, INITIAL_TRANSACTIONS, REKON_PETUGAS_LIST } from '../lib/seedData';
 import { supabase, isSupabaseConfigured } from '../lib/supabaseClient';
+import { getDeskActionAuthority, canActOnTransaction } from '../lib/permissions';
 
 const AuthContext = createContext();
 
@@ -92,6 +93,7 @@ const ROLE_PERMISSIONS = {
     '/dashboard',
     '/profile',
     '/pengajuan-spj',
+    '/pengajuan-spj/baru',
     '/panduan-akun',
     '/kalkulator-pajak',
     '/surat-tugas',
@@ -338,9 +340,22 @@ export function AuthProvider({ children }) {
   };
 
   const addTransaction = (newTx) => {
+    const initialLog = {
+      id: `log-${Date.now()}`,
+      timestamp: new Date().toISOString(),
+      actor_nama: currentUser?.nama || 'Pengaju',
+      actor_nip: currentUser?.nip_baru || '-',
+      actor_role: currentUser?.role || 'pegawai',
+      meja_asal: 'Draf Baru',
+      meja_tujuan: newTx.meja_berkas || 'Meja PPK (Peninjauan Komitmen)',
+      status_tujuan: newTx.status_dokumen || 'Di PPK',
+      catatan: newTx.catatan_kekurangan || 'Pengajuan berkas SPJ baru'
+    };
+
     const tx = {
       ...newTx,
       id: `spj-${Date.now()}`,
+      logs: [initialLog],
       created_at: new Date().toISOString()
     };
     setTransactions(prev => [tx, ...prev]);
@@ -357,10 +372,30 @@ export function AuthProvider({ children }) {
         else if (updates.status_dokumen === 'Perlu Perbaikan') meja = 'Meja PJ Kegiatan (Revisi Dokumen)';
         else if (updates.status_dokumen === 'Selesai') meja = 'Meja Arsip Keuangan (Lunas / SP2D Terbit)';
 
+        const targetMeja = updates.meja_berkas || meja;
+        const targetStatus = updates.status_dokumen || t.status_dokumen;
+
+        // Catat jejak audit trail (Chain of Custody Log)
+        const transitionLog = {
+          id: `log-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`,
+          timestamp: new Date().toISOString(),
+          actor_nama: currentUser?.nama || 'Sistem',
+          actor_nip: currentUser?.nip_baru || '-',
+          actor_role: currentUser?.role || 'pegawai',
+          meja_asal: t.meja_berkas || 'Meja Sebelumnya',
+          meja_tujuan: targetMeja,
+          status_tujuan: targetStatus,
+          catatan: updates.catatan || updates.review_ppk || updates.review_ppspm || updates.review_bdh || updates.catatan_kekurangan || 'Perpindahan meja berkas'
+        };
+
+        const existingLogs = Array.isArray(t.logs) ? t.logs : [];
+
         return {
           ...t,
           ...updates,
-          meja_berkas: updates.meja_berkas || meja,
+          meja_berkas: targetMeja,
+          status_dokumen: targetStatus,
+          logs: [transitionLog, ...existingLogs],
           tanggal_proses: updates.status_dokumen && updates.status_dokumen !== 'Draft' 
             ? (t.tanggal_proses || new Date().toISOString().split('T')[0]) 
             : t.tanggal_proses
@@ -391,6 +426,8 @@ export function AuthProvider({ children }) {
       rekonList,
       updateRekonStatus,
       canAccess,
+      getDeskActionAuthority,
+      canActOnTransaction,
       isSupabaseConfigured
     }}>
       {children}

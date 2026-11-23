@@ -16,11 +16,14 @@ import {
   User,
   Clock,
   Building2,
-  Calendar
+  Calendar,
+  Lock,
+  UserCheck
 } from 'lucide-react';
 import * as XLSX from 'xlsx';
 import { useAuth } from '../context/AuthContext';
 import { TIM_KERJA_LIST } from '../lib/seedData';
+import { canActOnTransaction } from '../lib/permissions';
 import Badge from '../components/common/Badge';
 
 export default function DaftarSPJPage() {
@@ -99,17 +102,25 @@ export default function DaftarSPJPage() {
     });
   };
 
+  const actionableItems = useMemo(() => {
+    return filteredData.filter(d => canActOnTransaction(currentUser, d));
+  }, [filteredData, currentUser]);
+
   const toggleSelectRow = (id) => {
+    const item = transactions.find(t => t.id === id);
+    if (!item || !canActOnTransaction(currentUser, item)) {
+      return; // Tidak dapat memilih berkas yang sedang di meja pejabat lain
+    }
     setSelectedRows(prev => 
       prev.includes(id) ? prev.filter(r => r !== id) : [...prev, id]
     );
   };
 
   const toggleSelectAll = () => {
-    if (selectedRows.length === filteredData.length) {
+    if (selectedRows.length === actionableItems.length && actionableItems.length > 0) {
       setSelectedRows([]);
     } else {
-      setSelectedRows(filteredData.map(d => d.id));
+      setSelectedRows(actionableItems.map(d => d.id));
     }
   };
 
@@ -117,36 +128,52 @@ export default function DaftarSPJPage() {
   const handleMassApproval = () => {
     if (selectedRows.length === 0) return;
     
+    let processedCount = 0;
     selectedRows.forEach(id => {
       const tx = transactions.find(t => t.id === id);
-      if (!tx) return;
+      if (!tx || !canActOnTransaction(currentUser, tx)) return;
 
-      if (tx.status_dokumen === 'Di PPK') {
+      if (tx.status_dokumen === 'Di PPK' && (currentUser?.role === 'ppk' || isSuperadmin)) {
         updateTransactionStatus(id, {
           status_dokumen: 'Di PPSPM',
           posisi_dokumen: 'Di PPSPM',
           meja_berkas: 'Meja PPSPM (Pengujian SPM)',
           review_ppk: 'Disetujui massal oleh PPK'
         });
-      } else if (tx.status_dokumen === 'Di PPSPM') {
+        processedCount++;
+      } else if (tx.status_dokumen === 'Di PPSPM' && (currentUser?.role === 'ppspm' || currentUser?.role === 'kpa' || isSuperadmin)) {
         updateTransactionStatus(id, {
           status_dokumen: 'Di Bendahara',
           posisi_dokumen: 'Di Bendahara',
           meja_berkas: 'Meja Bendahara (Pencairan Dana)',
           review_ppspm: 'Disetujui massal & SPM diterbitkan'
         });
-      } else if (tx.status_dokumen === 'Di Bendahara') {
+        processedCount++;
+      } else if (tx.status_dokumen === 'Di Bendahara' && (currentUser?.role === 'bendahara' || isSuperadmin)) {
         updateTransactionStatus(id, {
           status_dokumen: 'Selesai',
           posisi_dokumen: 'Selesai',
           meja_berkas: 'Meja Arsip Keuangan (Lunas / SP2D Terbit)',
           kelengkapan_dokumen: 'LENGKAP',
-          review_bdh: 'Telah dibayarkan / SP2D terbit'
+          review_bdh: 'Telah dicairkan / SP2D terbit'
         });
+        processedCount++;
+      } else if (tx.status_dokumen === 'Draft' || tx.status_dokumen === 'Perlu Perbaikan') {
+        updateTransactionStatus(id, {
+          status_dokumen: 'Di PPK',
+          posisi_dokumen: 'Di PPK',
+          meja_berkas: 'Meja PPK (Peninjauan Komitmen)',
+          review_ppk: 'Diajukan massal oleh PJ'
+        });
+        processedCount++;
       }
     });
 
-    setMassSuccessMsg(`${selectedRows.length} dokumen berhasil dipindahkan ke meja berikutnya secara massal!`);
+    if (processedCount > 0) {
+      setMassSuccessMsg(`${processedCount} dokumen di meja wewenang Anda berhasil dipindahkan secara massal!`);
+    } else {
+      setMassSuccessMsg('Tidak ada dokumen terpilih yang saat ini berada di bawah wewenang meja Anda.');
+    }
     setSelectedRows([]);
     setTimeout(() => setMassSuccessMsg(''), 4000);
   };
@@ -344,9 +371,11 @@ export default function DaftarSPJPage() {
                   <th className="py-3 px-2 w-[3%] text-center">
                     <input
                       type="checkbox"
-                      checked={filteredData.length > 0 && selectedRows.length === filteredData.length}
+                      checked={actionableItems.length > 0 && selectedRows.length === actionableItems.length}
+                      disabled={actionableItems.length === 0}
                       onChange={toggleSelectAll}
-                      className="rounded border-purple-300 text-purple-600 focus:ring-purple-500 cursor-pointer"
+                      className="rounded border-purple-300 text-purple-600 focus:ring-purple-500 cursor-pointer disabled:opacity-30"
+                      title={actionableItems.length > 0 ? "Pilih semua berkas di meja wewenang Anda" : "Tidak ada berkas di meja Anda"}
                     />
                   </th>
                 )}
@@ -376,12 +405,19 @@ export default function DaftarSPJPage() {
                     >
                       {isPimpinanOrKeuangan && (
                         <td className="py-2.5 px-2 text-center">
-                          <input
-                            type="checkbox"
-                            checked={isChecked}
-                            onChange={() => toggleSelectRow(item.id)}
-                            className="rounded border-purple-300 text-purple-600 cursor-pointer"
-                          />
+                          {canActOnTransaction(currentUser, item) ? (
+                            <input
+                              type="checkbox"
+                              checked={isChecked}
+                              onChange={() => toggleSelectRow(item.id)}
+                              className="rounded border-purple-300 text-purple-600 cursor-pointer"
+                              title="Centang untuk proses berkas di meja Anda"
+                            />
+                          ) : (
+                            <span title="Wewenang terkunci: Berkas saat ini sedang berada di meja lain">
+                              <Lock className="w-3.5 h-3.5 text-slate-300 mx-auto" />
+                            </span>
+                          )}
                         </td>
                       )}
 
