@@ -10,7 +10,7 @@ import ProfilePage from './pages/ProfilePage';
 import DaftarSPJPage from './pages/DaftarSPJPage';
 import FormSPJPage from './pages/FormSPJPage';
 import DetailSPJPage from './pages/DetailSPJPage';
-import RekonSPJPage from './pages/RekonSPJPage';
+import PanduanAlurPage from './pages/PanduanAlurPage';
 import PanduanAkunPage from './pages/PanduanAkunPage';
 import KalkulatorPajakPage from './pages/KalkulatorPajakPage';
 import SuratTugasPage from './pages/SuratTugasPage';
@@ -41,7 +41,7 @@ export default function App() {
         <Route path="/pengajuan-spj" element={<DaftarSPJPage />} />
         <Route path="/pengajuan-spj/baru" element={<FormSPJPage />} />
         <Route path="/pengajuan-spj/:id" element={<DetailSPJPage />} />
-        <Route path="/rekon-spj" element={<RekonSPJPage />} />
+        <Route path="/panduan-alur" element={<PanduanAlurPage />} />
         <Route path="/panduan-akun" element={<PanduanAkunPage />} />
         <Route path="/kalkulator-pajak" element={<KalkulatorPajakPage />} />
 

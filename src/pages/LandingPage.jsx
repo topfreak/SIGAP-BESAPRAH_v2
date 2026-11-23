@@ -199,9 +199,9 @@ export default function LandingPage() {
             <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center font-bold mb-4 group-hover:scale-110 transition">
               <FileCheck2 className="w-6 h-6" />
             </div>
-            <h3 className="text-base font-bold text-slate-800 mb-2">Verifikasi & Rekon Dokumen</h3>
+            <h3 className="text-base font-bold text-slate-800 mb-2">Alur Tertib & Verifikasi SPJ</h3>
             <p className="text-xs text-slate-500 leading-relaxed">
-              Checklist kelengkapan per 14 kode akun belanja dan pencatatan kekurangan berkas detail per orang/petugas lapangan (visum, BAST, tanda terima).
+              Alur pengajuan bertahap dari PJ Kegiatan, PPK, Bendahara, PPSPM hingga Meja Arsip dilengkapi checklist dokumen 14 kode akun belanja.
             </p>
           </div>
         </div>

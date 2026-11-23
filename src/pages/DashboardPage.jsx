@@ -14,14 +14,16 @@ import {
   ShieldCheck,
   Building2,
   Users,
-  Crown
+  Crown,
+  Milestone,
+  ArrowRight
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { TIM_KERJA_LIST } from '../lib/seedData';
 import Badge from '../components/common/Badge';
 
 export default function DashboardPage() {
-  const { currentUser, transactions, rekonList, canAccess } = useAuth();
+  const { currentUser, transactions, canAccess } = useAuth();
 
   // Statistics
   const total = transactions.length;
@@ -94,56 +96,42 @@ export default function DashboardPage() {
         </div>
       </div>
 
-      {/* WIDGET POSISI MEJA BERKAS SAAT INI (KETERANGAN JELAS DI MANA BERKAS BERADA) */}
+      {/* BANNER ALUR RESMI SPJ */}
+      <div className="p-4 md:p-5 rounded-2xl bg-white border border-purple-100 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-purple-100 text-purple-800 flex items-center justify-center flex-shrink-0 font-bold">
+            <Milestone className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wide flex items-center gap-2">
+              <span>Alur Pengajuan SPJ BPS Kabupaten Sambas</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold">Resmi</span>
+            </h3>
+            <p className="text-xs text-slate-500 mt-0.5">
+              PJ Kegiatan &rarr; PPK &rarr; Bendahara &rarr; PPSPM &rarr; Arsip Keuangan (Lunas)
+            </p>
+          </div>
+        </div>
+        <Link
+          to="/panduan-alur"
+          className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-purple-50 hover:bg-purple-100 text-purple-900 text-xs font-bold transition border border-purple-200 self-start md:self-auto"
+        >
+          <span>Buka Panduan Alur Lengkap</span>
+          <ArrowRight className="w-3.5 h-3.5" />
+        </Link>
+      </div>
+
+      {/* WIDGET POSISI MEJA BERKAS SAAT INI (BERDASARKAN ALUR TERTIB TAHAPAN) */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-sm font-extrabold text-slate-800 uppercase tracking-wider flex items-center gap-2">
-            <span>📍 Keterangan Posisi Berkas SPJ Saat Ini (Sedang di Meja Mana)</span>
+            <span>📍 Posisi Berkas SPJ Saat Ini (Urutan Alur: PJ &rarr; PPK &rarr; Bendahara &rarr; PPSPM &rarr; Arsip)</span>
           </h2>
           <span className="text-xs text-slate-400">Total {total} Berkas Aktif</span>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-          {/* Meja PPK */}
-          <Link
-            to="/pengajuan-spj?tab=Di%20PPK"
-            className="p-4 rounded-2xl bg-white border border-purple-200 hover:border-purple-500 shadow-xs hover:shadow-md transition group"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-xl">🗄️</span>
-              <span className="text-2xl font-black text-purple-900 group-hover:scale-110 transition">{countMejaPPK}</span>
-            </div>
-            <h3 className="font-extrabold text-xs text-slate-900 mt-2">Meja PPK</h3>
-            <p className="text-[10px] text-slate-400 mt-0.5">Peninjauan & Persetujuan Komitmen</p>
-          </Link>
-
-          {/* Meja PPSPM */}
-          <Link
-            to="/pengajuan-spj?tab=Di%20PPSPM"
-            className="p-4 rounded-2xl bg-white border border-indigo-200 hover:border-indigo-500 shadow-xs hover:shadow-md transition group"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-xl">⚖️</span>
-              <span className="text-2xl font-black text-indigo-900 group-hover:scale-110 transition">{countMejaPPSPM}</span>
-            </div>
-            <h3 className="font-extrabold text-xs text-slate-900 mt-2">Meja PPSPM</h3>
-            <p className="text-[10px] text-slate-400 mt-0.5">Pengujian Pembayaran & Terbit SPM</p>
-          </Link>
-
-          {/* Meja Bendahara */}
-          <Link
-            to="/pengajuan-spj?tab=Di%20Bendahara"
-            className="p-4 rounded-2xl bg-white border border-blue-200 hover:border-blue-500 shadow-xs hover:shadow-md transition group"
-          >
-            <div className="flex items-center justify-between">
-              <span className="text-xl">💼</span>
-              <span className="text-2xl font-black text-blue-900 group-hover:scale-110 transition">{countMejaBendahara}</span>
-            </div>
-            <h3 className="font-extrabold text-xs text-slate-900 mt-2">Meja Bendahara</h3>
-            <p className="text-[10px] text-slate-400 mt-0.5">Pencairan Dana & Pemotongan Pajak</p>
-          </Link>
-
-          {/* Meja PJ Kegiatan (Revisi) */}
+          {/* 1. Meja PJ Kegiatan (Revisi & Draft) */}
           <Link
             to="/pengajuan-spj?tab=Perlu%20Perbaikan"
             className="p-4 rounded-2xl bg-amber-50/70 border border-amber-300 hover:border-amber-500 shadow-xs hover:shadow-md transition group"
@@ -152,11 +140,62 @@ export default function DashboardPage() {
               <span className="text-xl animate-pulse">📝</span>
               <span className="text-2xl font-black text-amber-900 group-hover:scale-110 transition">{countMejaPJ}</span>
             </div>
-            <h3 className="font-extrabold text-xs text-amber-950 mt-2">Meja PJ Kegiatan</h3>
-            <p className="text-[10px] text-amber-800 font-semibold mt-0.5">Perlu Revisi / Dilengkapi</p>
+            <div className="mt-2">
+              <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wider">Tahap 1</span>
+              <h3 className="font-extrabold text-xs text-amber-950">Meja PJ Kegiatan</h3>
+            </div>
+            <p className="text-[10px] text-amber-800 font-semibold mt-0.5">Penyusunan & Perbaikan</p>
           </Link>
 
-          {/* Meja Arsip (Cair) */}
+          {/* 2. Meja PPK */}
+          <Link
+            to="/pengajuan-spj?tab=Di%20PPK"
+            className="p-4 rounded-2xl bg-white border border-purple-200 hover:border-purple-500 shadow-xs hover:shadow-md transition group"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xl">🗄️</span>
+              <span className="text-2xl font-black text-purple-900 group-hover:scale-110 transition">{countMejaPPK}</span>
+            </div>
+            <div className="mt-2">
+              <span className="text-[10px] font-bold text-purple-600 uppercase tracking-wider">Tahap 2</span>
+              <h3 className="font-extrabold text-xs text-slate-900">Meja PPK</h3>
+            </div>
+            <p className="text-[10px] text-slate-400 mt-0.5">Peninjauan Komitmen & SPP</p>
+          </Link>
+
+          {/* 3. Meja Bendahara */}
+          <Link
+            to="/pengajuan-spj?tab=Di%20Bendahara"
+            className="p-4 rounded-2xl bg-white border border-blue-200 hover:border-blue-500 shadow-xs hover:shadow-md transition group"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xl">💼</span>
+              <span className="text-2xl font-black text-blue-900 group-hover:scale-110 transition">{countMejaBendahara}</span>
+            </div>
+            <div className="mt-2">
+              <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wider">Tahap 3</span>
+              <h3 className="font-extrabold text-xs text-slate-900">Meja Bendahara</h3>
+            </div>
+            <p className="text-[10px] text-slate-400 mt-0.5">Verifikasi Kuitansi, Pajak & Kas</p>
+          </Link>
+
+          {/* 4. Meja PPSPM */}
+          <Link
+            to="/pengajuan-spj?tab=Di%20PPSPM"
+            className="p-4 rounded-2xl bg-white border border-indigo-200 hover:border-indigo-500 shadow-xs hover:shadow-md transition group"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-xl">⚖️</span>
+              <span className="text-2xl font-black text-indigo-900 group-hover:scale-110 transition">{countMejaPPSPM}</span>
+            </div>
+            <div className="mt-2">
+              <span className="text-[10px] font-bold text-indigo-600 uppercase tracking-wider">Tahap 4</span>
+              <h3 className="font-extrabold text-xs text-slate-900">Meja PPSPM</h3>
+            </div>
+            <p className="text-[10px] text-slate-400 mt-0.5">Pengujian Formal & SPM</p>
+          </Link>
+
+          {/* 5. Meja Arsip (Cair) */}
           <Link
             to="/pengajuan-spj?tab=Selesai"
             className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-300 hover:border-emerald-500 shadow-xs hover:shadow-md transition group"
@@ -165,7 +204,10 @@ export default function DashboardPage() {
               <span className="text-xl">🏛️</span>
               <span className="text-2xl font-black text-emerald-900 group-hover:scale-110 transition">{countMejaArsip}</span>
             </div>
-            <h3 className="font-extrabold text-xs text-emerald-950 mt-2">Meja Arsip (Cair)</h3>
+            <div className="mt-2">
+              <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-wider">Tahap 5</span>
+              <h3 className="font-extrabold text-xs text-emerald-950">Meja Arsip</h3>
+            </div>
             <p className="text-[10px] text-emerald-800 font-semibold mt-0.5">Lunas / SP2D Selesai</p>
           </Link>
         </div>

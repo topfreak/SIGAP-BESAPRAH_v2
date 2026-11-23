@@ -23,16 +23,16 @@ import {
   ShieldCheck,
   Crown,
   Lock,
-  UserCircle
+  UserCircle,
+  Milestone
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export default function Sidebar() {
   const location = useLocation();
-  const { transactions, rekonList, currentUser, canAccess } = useAuth();
+  const { transactions, currentUser, canAccess } = useAuth();
 
   const countPerluRevisi = transactions.filter(t => t.status_dokumen === 'Perlu Perbaikan' || t.kelengkapan_dokumen === 'BELUM LENGKAP').length;
-  const countRekonBelum = rekonList.filter(r => !r.is_selesai).length;
 
   const isSuperadmin = currentUser?.role === 'superadmin';
 
@@ -58,11 +58,9 @@ export default function Sidebar() {
         },
         { name: "Buat Pengajuan SPJ Baru", path: "/pengajuan-spj/baru", icon: FilePlus2 },
         { 
-          name: "Rekon & Kekurangan Berkas", 
-          path: "/rekon-spj", 
-          icon: FileCheck2,
-          badge: countRekonBelum > 0 ? countRekonBelum : null,
-          badgeColor: "bg-rose-400 text-purple-950 font-bold"
+          name: "Panduan Alur Pengajuan SPJ", 
+          path: "/panduan-alur", 
+          icon: Milestone 
         },
         { name: "Panduan Kelengkapan Akun", path: "/panduan-akun", icon: BookOpenCheck },
         { name: "Kalkulator Pajak (Tax Engine)", path: "/kalkulator-pajak", icon: Calculator },
