@@ -7,7 +7,7 @@
  */
 
 export const PEGAWAI_LIST = [
-  // Superadmin Khusus Pengelola Sistem
+  // 1. Superadmin Khusus Pengelola Sistem
   {
     nip_baru: "199901012024011001",
     nip_lama: "340000001",
@@ -17,10 +17,15 @@ export const PEGAWAI_LIST = [
     pangkat_golongan: "Pranata Komputer Ahli / Pengelola",
     jabatan: "Administrator Sistem BPS Sambas",
     status_pegawai: "PNS",
-    role: "superadmin",
+    jabatan_keuangan: "Administrator",
     tim_kerja: "IPDS",
-    email: "superadmin.sambas@bps.go.id"
+    role: "superadmin",
+    email: "superadmin.sambas@bps.go.id",
+    has_account: true,
+    status_akun: "Aktif"
   },
+
+  // 2. KPA: Solikhin, SST., M.Si (Jabatan Keuangan: KPA)
   {
     nip_baru: "197908271999121001",
     nip_lama: "340016058",
@@ -28,38 +33,53 @@ export const PEGAWAI_LIST = [
     password: "bps6101",
     nama: "Solikhin, SST., M.Si",
     pangkat_golongan: "Pembina Tk.I/IV/b",
-    jabatan: "Kepala Kantor (KPA)",
+    jabatan: "Kepala Kantor",
     status_pegawai: "PNS",
-    role: "kpa",
+    jabatan_keuangan: "KPA",
     tim_kerja: "Pimpinan",
-    email: "solikhin@bps.go.id"
+    role: "kpa",
+    email: "solikhin@bps.go.id",
+    has_account: true,
+    status_akun: "Aktif"
   },
+
+  // 3. Samsuri Sp, S.E. (Tanpa Jabatan Keuangan -> Tidak dibuatkan akun)
   {
     nip_baru: "197204191993111001",
     nip_lama: "340013716",
-    username: "samsuri",
-    password: "bps6101",
+    username: null,
+    password: null,
     nama: "Samsuri Sp, S.E.",
     pangkat_golongan: "Penata Tingkat I/III/d",
     jabatan: "Statistisi Penyelia",
     status_pegawai: "PNS",
-    role: "pj_kegiatan",
-    tim_kerja: "Distribusi",
-    email: "samsuri@bps.go.id"
+    jabatan_keuangan: "-",
+    tim_kerja: "-",
+    role: "pegawai",
+    email: "samsuri@bps.go.id",
+    has_account: false,
+    status_akun: "Tanpa Akun"
   },
+
+  // 4. Supardi, S.Mn. (Tanpa Jabatan Keuangan -> Tidak dibuatkan akun)
   {
     nip_baru: "197204071996031001",
     nip_lama: "340015261",
-    username: "supardi",
-    password: "bps6101",
+    username: null,
+    password: null,
     nama: "Supardi, S.Mn.",
     pangkat_golongan: "Penata Tingkat I/III/d",
     jabatan: "Statistisi Ahli Muda",
     status_pegawai: "PNS",
-    role: "pj_kegiatan",
-    tim_kerja: "Distribusi",
-    email: "supardi@bps.go.id"
+    jabatan_keuangan: "-",
+    tim_kerja: "-",
+    role: "pegawai",
+    email: "supardi@bps.go.id",
+    has_account: false,
+    status_akun: "Tanpa Akun"
   },
+
+  // 5. Adi Rakhmat Putranto, S.T (Jabatan Keuangan: Ketua Tim, Tim: Distribusi)
   {
     nip_baru: "198207142006041002",
     nip_lama: "340018451",
@@ -67,25 +87,35 @@ export const PEGAWAI_LIST = [
     password: "bps6101",
     nama: "Adi Rakhmat Putranto, S.T",
     pangkat_golongan: "Penata Tingkat I/III/d",
-    jabatan: "Statistisi Ahli Muda (PPK)",
+    jabatan: "Statistisi Ahli Muda",
     status_pegawai: "PNS",
-    role: "ppk",
-    tim_kerja: "Neraca",
-    email: "adi.rakhmat@bps.go.id"
+    jabatan_keuangan: "Ketua Tim",
+    tim_kerja: "Distribusi",
+    role: "pj_kegiatan",
+    email: "adi.rakhmat@bps.go.id",
+    has_account: true,
+    status_akun: "Aktif"
   },
+
+  // 6. Fauzan Azim, SST (Tanpa Jabatan Keuangan -> Tidak dibuatkan akun)
   {
     nip_baru: "198510202009021003",
     nip_lama: "340050093",
-    username: "fauzan",
-    password: "bps6101",
+    username: null,
+    password: null,
     nama: "Fauzan Azim, SST",
     pangkat_golongan: "Penata Tingkat I/III/d",
     jabatan: "Statistisi Ahli Pertama",
     status_pegawai: "PNS",
-    role: "pj_kegiatan",
-    tim_kerja: "Sosial",
-    email: "fauzan@bps.go.id"
+    jabatan_keuangan: "-",
+    tim_kerja: "-",
+    role: "pegawai",
+    email: "fauzan@bps.go.id",
+    has_account: false,
+    status_akun: "Tanpa Akun"
   },
+
+  // 7. Firmansyah, S.Si (Jabatan Keuangan: Ketua Tim, Tim: Distribusi)
   {
     nip_baru: "198507042010031003",
     nip_lama: "340053785",
@@ -95,36 +125,51 @@ export const PEGAWAI_LIST = [
     pangkat_golongan: "Penata Tingkat I/III/d",
     jabatan: "Statistisi Ahli Muda",
     status_pegawai: "PNS",
+    jabatan_keuangan: "Ketua Tim",
+    tim_kerja: "Distribusi",
     role: "pj_kegiatan",
-    tim_kerja: "Produksi",
-    email: "firmansyah@bps.go.id"
+    email: "firmansyah@bps.go.id",
+    has_account: true,
+    status_akun: "Aktif"
   },
+
+  // 8. Andi Noviantoni, S.P. (Tanpa Jabatan Keuangan -> Tidak dibuatkan akun)
   {
     nip_baru: "197911132011011004",
     nip_lama: "340055270",
-    username: "andi.noviantoni",
-    password: "bps6101",
+    username: null,
+    password: null,
     nama: "Andi Noviantoni, S.P.",
     pangkat_golongan: "Penata Tingkat I/III/d",
     jabatan: "Statistisi Ahli Muda",
     status_pegawai: "PNS",
-    role: "pj_kegiatan",
-    tim_kerja: "Produksi",
-    email: "andi.noviantoni@bps.go.id"
+    jabatan_keuangan: "-",
+    tim_kerja: "-",
+    role: "pegawai",
+    email: "andi.noviantoni@bps.go.id",
+    has_account: false,
+    status_akun: "Tanpa Akun"
   },
+
+  // 9. Nuri Hayana, S.Si. (Tanpa Jabatan Keuangan -> Tidak dibuatkan akun)
   {
     nip_baru: "198406102011012028",
     nip_lama: "340055293",
-    username: "nuri.hayana",
-    password: "bps6101",
+    username: null,
+    password: null,
     nama: "Nuri Hayana, S.Si.",
     pangkat_golongan: "Penata/III/c",
     jabatan: "Statistisi Ahli Muda",
     status_pegawai: "PNS",
-    role: "pj_kegiatan",
-    tim_kerja: "Sosial",
-    email: "nuri.hayana@bps.go.id"
+    jabatan_keuangan: "-",
+    tim_kerja: "-",
+    role: "pegawai",
+    email: "nuri.hayana@bps.go.id",
+    has_account: false,
+    status_akun: "Tanpa Akun"
   },
+
+  // 10. Fitria Wulandari, S.Tr.Stat. (Jabatan Keuangan: Ketua Tim, Tim: Sosial)
   {
     nip_baru: "199702272019012001",
     nip_lama: "340058741",
@@ -132,25 +177,35 @@ export const PEGAWAI_LIST = [
     password: "bps6101",
     nama: "Fitria Wulandari, S.Tr.Stat.",
     pangkat_golongan: "Penata Muda Tingkat I/III/b",
-    jabatan: "Statistisi Ahli Pertama (PPSPM)",
+    jabatan: "Statistisi Ahli Pertama",
     status_pegawai: "PNS",
-    role: "ppspm",
+    jabatan_keuangan: "Ketua Tim",
     tim_kerja: "Sosial",
-    email: "fitria.wulandari@bps.go.id"
+    role: "pj_kegiatan",
+    email: "fitria.wulandari@bps.go.id",
+    has_account: true,
+    status_akun: "Aktif"
   },
+
+  // 11. Ria Hayatun Nur, S.Stat., M.Si (Tanpa Jabatan Keuangan -> Tidak dibuatkan akun)
   {
     nip_baru: "199108102019032001",
     nip_lama: "340059078",
-    username: "ria.hayatun",
-    password: "bps6101",
+    username: null,
+    password: null,
     nama: "Ria Hayatun Nur, S.Stat., M.Si",
     pangkat_golongan: "Penata Muda Tingkat I/III/b",
     jabatan: "Statistisi Ahli Pertama",
     status_pegawai: "PNS",
-    role: "pj_kegiatan",
-    tim_kerja: "Neraca",
-    email: "ria.hayatun@bps.go.id"
+    jabatan_keuangan: "-",
+    tim_kerja: "-",
+    role: "pegawai",
+    email: "ria.hayatun@bps.go.id",
+    has_account: false,
+    status_akun: "Tanpa Akun"
   },
+
+  // 12. Dhimas Yuzi Alfarizzi, S.Tr.Stat. (Jabatan Keuangan: Ketua Tim & PPK, Tim: Neraca)
   {
     nip_baru: "200006272022011006",
     nip_lama: "340060580",
@@ -158,38 +213,53 @@ export const PEGAWAI_LIST = [
     password: "bps6101",
     nama: "Dhimas Yuzi Alfarizzi, S.Tr.Stat.",
     pangkat_golongan: "Penata Muda Tingkat I/III/b",
-    jabatan: "Statistisi Ahli Pertama (Verifikator)",
+    jabatan: "Statistisi Ahli Pertama",
     status_pegawai: "PNS",
-    role: "verifikator",
-    tim_kerja: "Umum",
-    email: "dhimas.yuzi@bps.go.id"
+    jabatan_keuangan: "Ketua Tim & PPK",
+    tim_kerja: "Neraca",
+    role: "ppk",
+    email: "dhimas.yuzi@bps.go.id",
+    has_account: true,
+    status_akun: "Aktif"
   },
+
+  // 13. Nurhidayatul Fitri, S.Tr.Stat. (Tanpa Jabatan Keuangan -> Tidak dibuatkan akun)
   {
     nip_baru: "199901182022012002",
     nip_lama: "340060832",
-    username: "nurhidayatul",
-    password: "bps6101",
+    username: null,
+    password: null,
     nama: "Nurhidayatul Fitri, S.Tr.Stat.",
     pangkat_golongan: "Penata Muda Tingkat I/III/b",
     jabatan: "Statistisi Ahli Pertama",
     status_pegawai: "PNS",
-    role: "pj_kegiatan",
-    tim_kerja: "Sosial",
-    email: "nurhidayatul.fitri@bps.go.id"
+    jabatan_keuangan: "-",
+    tim_kerja: "-",
+    role: "pegawai",
+    email: "nurhidayatul.fitri@bps.go.id",
+    has_account: false,
+    status_akun: "Tanpa Akun"
   },
+
+  // 14. Alifah Zalfa Azizah, S.Tr.Stat. (Tanpa Jabatan Keuangan -> Tidak dibuatkan akun)
   {
     nip_baru: "200010082023022002",
     nip_lama: "340061663",
-    username: "alifah.zalfa",
-    password: "bps6101",
+    username: null,
+    password: null,
     nama: "Alifah Zalfa Azizah, S.Tr.Stat.",
     pangkat_golongan: "Penata Muda/ III/a",
     jabatan: "Statistisi Ahli Pertama",
     status_pegawai: "PNS",
-    role: "pj_kegiatan",
-    tim_kerja: "Distribusi",
-    email: "alifah.zalfa@bps.go.id"
+    jabatan_keuangan: "-",
+    tim_kerja: "-",
+    role: "pegawai",
+    email: "alifah.zalfa@bps.go.id",
+    has_account: false,
+    status_akun: "Tanpa Akun"
   },
+
+  // 15. Talitha Nabila Saifana, S.Tr.Stat. (Jabatan Keuangan: Ketua Tim, Tim: IPDS)
   {
     nip_baru: "200003232023022003",
     nip_lama: "340062067",
@@ -199,88 +269,123 @@ export const PEGAWAI_LIST = [
     pangkat_golongan: "Penata Muda/ III/a",
     jabatan: "Pranata Komputer Ahli Pertama",
     status_pegawai: "PNS",
-    role: "admin",
+    jabatan_keuangan: "Ketua Tim",
     tim_kerja: "IPDS",
-    email: "talitha.nabila@bps.go.id"
+    role: "pj_kegiatan",
+    email: "talitha.nabila@bps.go.id",
+    has_account: true,
+    status_akun: "Aktif"
   },
+
+  // 16. Dwi Karunia Syaputri, S.Tr.Stat. (Tanpa Jabatan Keuangan -> Tidak dibuatkan akun)
   {
     nip_baru: "200001052023102001",
     nip_lama: "340062415",
-    username: "dwi.karunia",
-    password: "bps6101",
+    username: null,
+    password: null,
     nama: "Dwi Karunia Syaputri, S.Tr.Stat.",
     pangkat_golongan: "Penata Muda/ III/a",
     jabatan: "Pranata Komputer Ahli Pertama",
     status_pegawai: "PNS",
-    role: "admin",
-    tim_kerja: "IPDS",
-    email: "dwi.karunia@bps.go.id"
+    jabatan_keuangan: "-",
+    tim_kerja: "-",
+    role: "pegawai",
+    email: "dwi.karunia@bps.go.id",
+    has_account: false,
+    status_akun: "Tanpa Akun"
   },
+
+  // 17. Zahra Maharani, S.Tr.Stat (Tanpa Jabatan Keuangan -> Tidak dibuatkan akun)
   {
     nip_baru: "200106012024122001",
     nip_lama: "340063600",
-    username: "zahra",
-    password: "bps6101",
+    username: null,
+    password: null,
     nama: "Zahra Maharani, S.Tr.Stat",
     pangkat_golongan: "Penata Muda/ III/a",
     jabatan: "Statistisi Ahli Pertama",
     status_pegawai: "PNS",
-    role: "pj_kegiatan",
-    tim_kerja: "Sosial",
-    email: "zahra.maharani@bps.go.id"
+    jabatan_keuangan: "-",
+    tim_kerja: "-",
+    role: "pegawai",
+    email: "zahra.maharani@bps.go.id",
+    has_account: false,
+    status_akun: "Tanpa Akun"
   },
+
+  // 18. Dermawati Rematos Siahaan, A.Md.T (Tanpa Jabatan Keuangan -> Tidak dibuatkan akun)
   {
     nip_baru: "199811282022032007",
     nip_lama: "340061238",
-    username: "dermawati",
-    password: "bps6101",
+    username: null,
+    password: null,
     nama: "Dermawati Rematos Siahaan, A.Md.T",
     pangkat_golongan: "Pengatur Tk I/II/d",
     jabatan: "Statistisi Terampil",
     status_pegawai: "PNS",
-    role: "pj_kegiatan",
-    tim_kerja: "Umum",
-    email: "dermawati@bps.go.id"
+    jabatan_keuangan: "-",
+    tim_kerja: "-",
+    role: "pegawai",
+    email: "dermawati@bps.go.id",
+    has_account: false,
+    status_akun: "Tanpa Akun"
   },
+
+  // 19. Muhammad Reynaldi, A.Md (Tanpa Jabatan Keuangan -> Tidak dibuatkan akun)
   {
     nip_baru: "199904212022031005",
     nip_lama: "340061436",
-    username: "reynaldi",
-    password: "bps6101",
+    username: null,
+    password: null,
     nama: "Muhammad Reynaldi, A.Md",
     pangkat_golongan: "Pengatur/II/c",
     jabatan: "Statistisi Terampil",
     status_pegawai: "PNS",
-    role: "pj_kegiatan",
-    tim_kerja: "Umum",
-    email: "reynaldi@bps.go.id"
+    jabatan_keuangan: "-",
+    tim_kerja: "-",
+    role: "pegawai",
+    email: "reynaldi@bps.go.id",
+    has_account: false,
+    status_akun: "Tanpa Akun"
   },
+
+  // 20. Suhaimi, S.Mn (Tanpa Jabatan Keuangan -> Tidak dibuatkan akun)
   {
     nip_baru: "198010232025211025",
     nip_lama: "340065717",
-    username: "suhaimi",
-    password: "bps6101",
+    username: null,
+    password: null,
     nama: "Suhaimi, S.Mn",
     pangkat_golongan: "IX",
     jabatan: "Penata Layanan Operasional",
     status_pegawai: "PNS",
+    jabatan_keuangan: "-",
+    tim_kerja: "-",
     role: "pegawai",
-    tim_kerja: "Umum",
-    email: "suhaimi@bps.go.id"
+    email: "suhaimi@bps.go.id",
+    has_account: false,
+    status_akun: "Tanpa Akun"
   },
+
+  // 21. Diva Maharani Basuki, S.Tr.Stat. (Tanpa Jabatan Keuangan -> Tidak dibuatkan akun)
   {
     nip_baru: "200202192026032001",
     nip_lama: "340066191",
-    username: "diva.maharani",
-    password: "bps6101",
+    username: null,
+    password: null,
     nama: "Diva Maharani Basuki, S.Tr.Stat.",
     pangkat_golongan: "Penata Muda/ III/a",
     jabatan: "Statistisi Ahli Pertama",
     status_pegawai: "CPNS",
-    role: "pj_kegiatan",
-    tim_kerja: "Produksi",
-    email: "diva.maharani@bps.go.id"
+    jabatan_keuangan: "-",
+    tim_kerja: "-",
+    role: "pegawai",
+    email: "diva.maharani@bps.go.id",
+    has_account: false,
+    status_akun: "Tanpa Akun"
   },
+
+  // 22. Ade Wahyu Pratama Putri, SST (Jabatan Keuangan: PPSPM, Tim: Umum)
   {
     nip_baru: "199405122017012001",
     nip_lama: "340057751",
@@ -290,10 +395,15 @@ export const PEGAWAI_LIST = [
     pangkat_golongan: "Penata/III/c",
     jabatan: "Kasubbag Umum",
     status_pegawai: "PNS",
-    role: "admin",
+    jabatan_keuangan: "PPSPM",
     tim_kerja: "Umum",
-    email: "ade.wahyu@bps.go.id"
+    role: "ppspm",
+    email: "ade.wahyu@bps.go.id",
+    has_account: true,
+    status_akun: "Aktif"
   },
+
+  // 23. Lasmi, A.Md. (Jabatan Keuangan: Bendahara, Tim: Keuangan)
   {
     nip_baru: "198210202011012009",
     nip_lama: "340055288",
@@ -303,10 +413,15 @@ export const PEGAWAI_LIST = [
     pangkat_golongan: "Penata Muda Tk.I/III/b",
     jabatan: "Statistisi Penyelia",
     status_pegawai: "PNS",
-    role: "pj_kegiatan",
-    tim_kerja: "Distribusi",
-    email: "lasmi@bps.go.id"
+    jabatan_keuangan: "Bendahara",
+    tim_kerja: "Keuangan",
+    role: "bendahara",
+    email: "lasmi@bps.go.id",
+    has_account: true,
+    status_akun: "Aktif"
   },
+
+  // 24. Erika Anastasia Putri, A.Md.Ak (Jabatan Keuangan: Arsip, Tim: Keuangan)
   {
     nip_baru: "200207292025062001",
     nip_lama: "340063748",
@@ -314,37 +429,50 @@ export const PEGAWAI_LIST = [
     password: "bps6101",
     nama: "Erika Anastasia Putri, A.Md.Ak",
     pangkat_golongan: "Pengatur/II/c",
-    jabatan: "Pranata Keuangan APBN (Bendahara)",
+    jabatan: "Pranata Keuangan APBN",
     status_pegawai: "PNS",
-    role: "bendahara",
-    tim_kerja: "Umum",
-    email: "erika.anastasia@bps.go.id"
+    jabatan_keuangan: "Arsip",
+    tim_kerja: "Keuangan",
+    role: "verifikator",
+    email: "erika.anastasia@bps.go.id",
+    has_account: true,
+    status_akun: "Aktif"
   },
+
+  // 25. Mursalin (Tanpa Jabatan Keuangan -> Tidak dibuatkan akun)
   {
     nip_baru: "198007042025211030",
     nip_lama: "340065250",
-    username: "mursalin",
-    password: "bps6101",
+    username: null,
+    password: null,
     nama: "Mursalin",
     pangkat_golongan: "V",
     jabatan: "Operator Layanan Operasional",
     status_pegawai: "PNS",
+    jabatan_keuangan: "-",
+    tim_kerja: "-",
     role: "pegawai",
-    tim_kerja: "Umum",
-    email: "mursalin@bps.go.id"
+    email: "mursalin@bps.go.id",
+    has_account: false,
+    status_akun: "Tanpa Akun"
   },
+
+  // 26. Nurdiyanto (Tanpa Jabatan Keuangan -> Tidak dibuatkan akun)
   {
     nip_baru: "198606032025211064",
     nip_lama: "340065329",
-    username: "nurdiyanto",
-    password: "bps6101",
+    username: null,
+    password: null,
     nama: "Nurdiyanto",
     pangkat_golongan: "V",
     jabatan: "Operator Layanan Operasional",
     status_pegawai: "PNS",
+    jabatan_keuangan: "-",
+    tim_kerja: "-",
     role: "pegawai",
-    tim_kerja: "Umum",
-    email: "nurdiyanto@bps.go.id"
+    email: "nurdiyanto@bps.go.id",
+    has_account: false,
+    status_akun: "Tanpa Akun"
   }
 ];
 

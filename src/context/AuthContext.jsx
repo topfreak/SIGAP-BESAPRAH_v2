@@ -107,15 +107,17 @@ const ROLE_PERMISSIONS = {
 export function AuthProvider({ children }) {
   // Master users list (disimpan di localStorage atau fallback ke PEGAWAI_LIST)
   const [users, setUsers] = useState(() => {
-    const saved = localStorage.getItem('sigap_users');
+    const saved = localStorage.getItem('sigap_users_v4');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       } catch (e) {
-        console.error('Error parsing sigap_users:', e);
+        console.error('Error parsing sigap_users_v4:', e);
       }
     }
+    // Bersihkan versi lama agar data terbaru langsung aktif
+    localStorage.removeItem('sigap_users');
     return PEGAWAI_LIST;
   });
 
@@ -125,7 +127,8 @@ export function AuthProvider({ children }) {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        if (parsed && parsed.username && parsed.nip_baru) {
+        // Validasi hanya user dengan has_account yang bisa memegang sesi aktif
+        if (parsed && parsed.username && parsed.nip_baru && parsed.has_account !== false) {
           return parsed;
         }
       } catch (e) {
@@ -153,7 +156,7 @@ export function AuthProvider({ children }) {
 
   // Save changes to localStorage
   useEffect(() => {
-    localStorage.setItem('sigap_users', JSON.stringify(users));
+    localStorage.setItem('sigap_users_v4', JSON.stringify(users));
   }, [users]);
 
   useEffect(() => {
@@ -190,12 +193,19 @@ export function AuthProvider({ children }) {
 
     const cleanInput = usernameInput.trim().toLowerCase();
     const found = users.find(p => 
-      p.username?.toLowerCase() === cleanInput ||
+      (p.username && p.username.toLowerCase() === cleanInput) ||
       p.nip_baru === usernameInput.trim()
     );
 
     if (!found) {
       return { success: false, message: 'Username atau NIP tidak ditemukan dalam sistem.' };
+    }
+
+    if (!found.has_account || !found.password) {
+      return { 
+        success: false, 
+        message: 'Pegawai ini tidak memiliki akun login keuangan. Sesuai kebijakan, hanya pegawai dengan Jabatan Keuangan yang dibuatkan akun.' 
+      };
     }
 
     // Strict Password Validation
@@ -271,9 +281,12 @@ export function AuthProvider({ children }) {
       pangkat_golongan: userData.pangkat_golongan || 'Pengatur Muda/II/a',
       jabatan: userData.jabatan || 'Staf Pelaksana',
       status_pegawai: userData.status_pegawai || 'PNS',
-      role: userData.role || 'pegawai',
+      jabatan_keuangan: userData.jabatan_keuangan || 'Ketua Tim',
       tim_kerja: userData.tim_kerja || 'Umum',
+      role: userData.role || 'pj_kegiatan',
       email: userData.email?.trim() || `${cleanUsername}@bps.go.id`,
+      has_account: true,
+      status_akun: 'Aktif',
       created_at: new Date().toISOString()
     };
 

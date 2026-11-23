@@ -154,18 +154,37 @@ export default function LoginPage() {
         </form>
 
         {/* Informational Guidance (No one-click bypass) */}
-        <div className="mt-5 p-3 rounded-2xl bg-purple-50/60 border border-purple-100 text-[11px] text-slate-600 space-y-1">
+        <div className="mt-5 p-3 rounded-2xl bg-purple-50/60 border border-purple-100 text-[11px] text-slate-600 space-y-1.5">
           <div className="flex items-center gap-1.5 font-bold text-purple-900">
             <Info className="w-3.5 h-3.5 text-purple-600 flex-shrink-0" />
-            <span>Petunjuk Akses Sistem:</span>
+            <span>Petunjuk Akses Akun Resmi:</span>
           </div>
-          <p className="text-slate-600 leading-relaxed pl-5">
-            Gunakan <strong>username</strong> dan <strong>kata sandi</strong> resmi Anda.
+          <p className="text-slate-600 leading-relaxed pl-5 text-[11px]">
+            Hanya pegawai dengan <strong>Jabatan Keuangan</strong> yang memiliki akun login ke sistem SIGAP BESAPRAH.
           </p>
-          <p className="text-slate-500 leading-relaxed pl-5 text-[10px]">
-            • Akun Superadmin: <code className="bg-purple-100 px-1 py-0.5 rounded text-purple-900 font-mono">superadmin</code> (pass: <code className="bg-purple-100 px-1 py-0.5 rounded text-purple-900 font-mono">admin123</code>)<br />
-            • Akun Pegawai BPS Sambas: username masing-masing (pass awal: <code className="bg-purple-100 px-1 py-0.5 rounded text-purple-900 font-mono">bps6101</code>)
-          </p>
+          <div className="text-slate-600 leading-relaxed pl-5 text-[10px] space-y-1">
+            <div>
+              • <strong>Superadmin</strong>: <code className="bg-purple-100 px-1 py-0.5 rounded text-purple-900 font-mono">superadmin</code> (pass: <code className="bg-purple-100 px-1 py-0.5 rounded text-purple-900 font-mono">admin123</code>)
+            </div>
+            <div>
+              • <strong>KPA (Kepala Kantor)</strong>: <code className="bg-purple-100 px-1 py-0.5 rounded text-purple-900 font-mono">solikhin</code> (pass: <code className="bg-purple-100 px-1 py-0.5 rounded text-purple-900 font-mono">bps6101</code>)
+            </div>
+            <div>
+              • <strong>PPK (Ketua Tim Neraca)</strong>: <code className="bg-purple-100 px-1 py-0.5 rounded text-purple-900 font-mono">dhimas.yuzi</code> (pass: <code className="bg-purple-100 px-1 py-0.5 rounded text-purple-900 font-mono">bps6101</code>)
+            </div>
+            <div>
+              • <strong>Bendahara Pengeluaran</strong>: <code className="bg-purple-100 px-1 py-0.5 rounded text-purple-900 font-mono">lasmi</code> (pass: <code className="bg-purple-100 px-1 py-0.5 rounded text-purple-900 font-mono">bps6101</code>)
+            </div>
+            <div>
+              • <strong>PPSPM (Kasubbag Umum)</strong>: <code className="bg-purple-100 px-1 py-0.5 rounded text-purple-900 font-mono">ade.wahyu</code> (pass: <code className="bg-purple-100 px-1 py-0.5 rounded text-purple-900 font-mono">bps6101</code>)
+            </div>
+            <div>
+              • <strong>Petugas Arsip Keuangan</strong>: <code className="bg-purple-100 px-1 py-0.5 rounded text-purple-900 font-mono">erika</code> (pass: <code className="bg-purple-100 px-1 py-0.5 rounded text-purple-900 font-mono">bps6101</code>)
+            </div>
+            <div>
+              • <strong>Ketua Tim (PJ Kegiatan)</strong>: <code className="bg-purple-100 px-1 py-0.5 rounded text-purple-900 font-mono">adi.rakhmat</code>, <code className="bg-purple-100 px-1 py-0.5 rounded text-purple-900 font-mono">firmansyah</code>, <code className="bg-purple-100 px-1 py-0.5 rounded text-purple-900 font-mono">fitria.w</code>, <code className="bg-purple-100 px-1 py-0.5 rounded text-purple-900 font-mono">talitha</code> (pass: <code className="bg-purple-100 px-1 py-0.5 rounded text-purple-900 font-mono">bps6101</code>)
+            </div>
+          </div>
         </div>
 
         {/* Back Link */}

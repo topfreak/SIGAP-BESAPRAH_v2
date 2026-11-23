@@ -256,7 +256,7 @@ export default function FormSPJPage() {
                 >
                   {pegawaiList.map(p => (
                     <option key={p.nip_baru} value={p.nip_baru}>
-                      {p.nama} — {p.jabatan} ({p.role.toUpperCase()})
+                      {p.nama} — {p.jabatan_keuangan && p.jabatan_keuangan !== '-' ? p.jabatan_keuangan : p.jabatan} {p.tim_kerja && p.tim_kerja !== '-' ? `(Tim ${p.tim_kerja})` : ''}
                     </option>
                   ))}
                 </select>
