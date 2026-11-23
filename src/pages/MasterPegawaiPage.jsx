@@ -313,14 +313,16 @@ export default function MasterPegawaiPage() {
             </thead>
             <tbody className="divide-y divide-purple-50">
               {filtered.map((p, idx) => {
-                const isCurrent = currentUser?.nip_baru === p.nip_baru;
+                const isCurrent = currentUser?.username === p.username || (p.nip_baru !== '-' && currentUser?.nip_baru === p.nip_baru);
                 const hasAcc = p.has_account;
+                const isAdmin = p.role === 'superadmin' || p.username === 'superadmin';
+
                 return (
-                  <tr key={p.nip_baru} className={`hover:bg-purple-50/40 transition ${isCurrent ? 'bg-purple-50/60' : ''}`}>
-                    <td className="py-3 px-3 font-mono text-slate-400">{idx + 1}</td>
+                  <tr key={p.username || p.nip_baru || idx} className={`hover:bg-purple-50/40 transition ${isCurrent ? 'bg-purple-50/60' : ''}`}>
+                    <td className="py-3.5 px-3 font-mono text-slate-400">{idx + 1}</td>
                     
                     {/* Pegawai & Status */}
-                    <td className="py-3 px-3">
+                    <td className="py-3.5 px-3">
                       <div className="font-bold text-slate-900 flex items-center gap-1.5">
                         <span>{p.nama}</span>
                         {isCurrent && (
@@ -328,11 +330,17 @@ export default function MasterPegawaiPage() {
                         )}
                       </div>
                       <div className="flex items-center gap-1.5 mt-1">
-                        <span className={`text-[9px] px-1.5 py-0.2 rounded font-bold uppercase ${
-                          p.status_pegawai === 'CPNS' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600'
-                        }`}>
-                          {p.status_pegawai || 'PNS'}
-                        </span>
+                        {isAdmin ? (
+                          <span className="text-[9px] px-1.5 py-0.2 rounded font-extrabold uppercase bg-amber-100 text-amber-900 border border-amber-300">
+                            ADMIN SISTEM
+                          </span>
+                        ) : p.status_pegawai && p.status_pegawai !== '-' ? (
+                          <span className={`text-[9px] px-1.5 py-0.2 rounded font-bold uppercase ${
+                            p.status_pegawai === 'CPNS' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600'
+                          }`}>
+                            {p.status_pegawai}
+                          </span>
+                        ) : null}
                         {p.email && (
                           <span className="text-[10px] text-slate-400 truncate max-w-[140px] flex items-center gap-1">
                             <Mail className="w-2.5 h-2.5 text-purple-400" />
@@ -342,25 +350,41 @@ export default function MasterPegawaiPage() {
                       </div>
                     </td>
 
-                    {/* NIP */}
-                    <td className="py-3 px-3 font-mono">
-                      <div className="text-slate-800 font-semibold">{p.nip_baru}</div>
-                      <div className="text-[10px] text-slate-400">{p.nip_lama || '-'}</div>
+                    {/* NIP Baru / Lama */}
+                    <td className="py-3.5 px-3 font-mono">
+                      {isAdmin || !p.nip_baru || p.nip_baru === '-' ? (
+                        <span className="text-slate-400 font-mono text-[11px]">-</span>
+                      ) : (
+                        <>
+                          <div className="text-slate-800 font-semibold">{p.nip_baru}</div>
+                          <div className="text-[10px] text-slate-400">{p.nip_lama && p.nip_lama !== '-' ? p.nip_lama : '-'}</div>
+                        </>
+                      )}
                     </td>
 
                     {/* Pangkat & Golongan */}
-                    <td className="py-3 px-3 font-medium text-slate-700">
-                      {p.pangkat_golongan}
+                    <td className="py-3.5 px-3 font-medium text-slate-700">
+                      {isAdmin || !p.pangkat_golongan || p.pangkat_golongan === '-' ? (
+                        <span className="text-slate-400 font-mono text-[11px]">-</span>
+                      ) : (
+                        p.pangkat_golongan
+                      )}
                     </td>
 
                     {/* Jabatan Fungsional */}
-                    <td className="py-3 px-3 font-semibold text-slate-800">
-                      {p.jabatan}
+                    <td className="py-3.5 px-3 font-semibold text-slate-800">
+                      {isAdmin || !p.jabatan || p.jabatan === '-' ? (
+                        <span className="text-slate-400 font-mono text-[11px]">-</span>
+                      ) : (
+                        p.jabatan
+                      )}
                     </td>
 
                     {/* Jabatan Keuangan */}
-                    <td className="py-3 px-3 text-center">
-                      {p.jabatan_keuangan && p.jabatan_keuangan !== '-' ? (
+                    <td className="py-3.5 px-3 text-center">
+                      {isAdmin || !p.jabatan_keuangan || p.jabatan_keuangan === '-' ? (
+                        <span className="text-slate-400 font-mono text-[11px]">-</span>
+                      ) : (
                         <span className={`px-2.5 py-1 rounded-full text-[10px] font-extrabold border ${
                           p.jabatan_keuangan === 'KPA' ? 'bg-amber-100 text-amber-950 border-amber-300' :
                           p.jabatan_keuangan.includes('PPK') ? 'bg-purple-100 text-purple-950 border-purple-300' :
@@ -371,43 +395,44 @@ export default function MasterPegawaiPage() {
                         }`}>
                           {p.jabatan_keuangan}
                         </span>
-                      ) : (
-                        <span className="text-slate-400 font-mono text-[11px]">-</span>
                       )}
                     </td>
 
                     {/* Tim Kerja */}
-                    <td className="py-3 px-3 text-center">
-                      {p.tim_kerja && p.tim_kerja !== '-' ? (
+                    <td className="py-3.5 px-3 text-center">
+                      {isAdmin || !p.tim_kerja || p.tim_kerja === '-' ? (
+                        <span className="text-slate-400 font-mono text-[11px]">-</span>
+                      ) : (
                         <span className="px-2 py-0.5 rounded-md bg-purple-100/80 text-purple-800 font-bold text-[10px]">
                           {p.tim_kerja}
                         </span>
-                      ) : (
-                        <span className="text-slate-400 font-mono text-[11px]">-</span>
                       )}
                     </td>
 
                     {/* Status Akun & Login */}
-                    <td className="py-3 px-3 text-center">
+                    <td className="py-3.5 px-4 text-center whitespace-nowrap min-w-[130px]">
                       {hasAcc ? (
-                        <div className="inline-flex flex-col items-center">
-                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-[10px] border border-emerald-200">
-                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                        <div className="inline-flex flex-col items-center justify-center gap-1.5">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 font-bold text-[10px] border border-emerald-300 shadow-2xs">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
                             <span>Akun Aktif</span>
                           </span>
-                          <span className="font-mono text-[10px] text-purple-900 font-semibold mt-0.5">
+                          <span className="font-mono text-[11px] font-bold text-purple-950 bg-purple-50/90 px-2.5 py-0.5 rounded-md border border-purple-200">
                             @{p.username}
                           </span>
                         </div>
                       ) : (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 font-medium text-[10px] border border-slate-200">
-                          Tanpa Akun
-                        </span>
+                        <div className="inline-flex items-center justify-center">
+                          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-500 font-medium text-[10px] border border-slate-200">
+                            <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                            <span>Tanpa Akun</span>
+                          </span>
+                        </div>
                       )}
                     </td>
 
                     {/* Aksi Superadmin */}
-                    <td className="py-3 px-3 text-center">
+                    <td className="py-3.5 px-3 text-center">
                       {isSuperadmin ? (
                         <div className="flex items-center justify-center gap-1.5">
                           {hasAcc ? (
@@ -463,7 +488,7 @@ export default function MasterPegawaiPage() {
                                 });
                                 setShowEditModal(true);
                               }}
-                              className="px-2 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 font-bold text-[10px] transition"
+                              className="px-2.5 py-1 rounded-lg bg-purple-50 hover:bg-purple-100 text-purple-900 border border-purple-200 font-bold text-[10px] transition"
                             >
                               + Buat Akun
                             </button>

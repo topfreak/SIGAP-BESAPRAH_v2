@@ -7,18 +7,18 @@
  */
 
 export const PEGAWAI_LIST = [
-  // 1. Superadmin Khusus Pengelola Sistem
+  // 1. Superadmin Khusus Pengelola Sistem (Tanpa NIP, Pangkat/Gol, Jabatan Fungsional/Keuangan)
   {
-    nip_baru: "199901012024011001",
-    nip_lama: "340000001",
+    nip_baru: "-",
+    nip_lama: "-",
     username: "superadmin",
     password: "admin123",
     nama: "Superadmin SIGAP BESAPRAH",
-    pangkat_golongan: "Pranata Komputer Ahli / Pengelola",
-    jabatan: "Administrator Sistem BPS Sambas",
-    status_pegawai: "PNS",
-    jabatan_keuangan: "Administrator",
-    tim_kerja: "IPDS",
+    pangkat_golongan: "-",
+    jabatan: "-",
+    status_pegawai: "-",
+    jabatan_keuangan: "-",
+    tim_kerja: "-",
     role: "superadmin",
     email: "superadmin.sambas@bps.go.id",
     has_account: true,

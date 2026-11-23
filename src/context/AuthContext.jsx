@@ -107,17 +107,18 @@ const ROLE_PERMISSIONS = {
 export function AuthProvider({ children }) {
   // Master users list (disimpan di localStorage atau fallback ke PEGAWAI_LIST)
   const [users, setUsers] = useState(() => {
-    const saved = localStorage.getItem('sigap_users_v4');
+    const saved = localStorage.getItem('sigap_users_v5');
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       } catch (e) {
-        console.error('Error parsing sigap_users_v4:', e);
+        console.error('Error parsing sigap_users_v5:', e);
       }
     }
     // Bersihkan versi lama agar data terbaru langsung aktif
     localStorage.removeItem('sigap_users');
+    localStorage.removeItem('sigap_users_v4');
     return PEGAWAI_LIST;
   });
 
@@ -128,7 +129,7 @@ export function AuthProvider({ children }) {
       try {
         const parsed = JSON.parse(saved);
         // Validasi hanya user dengan has_account yang bisa memegang sesi aktif
-        if (parsed && parsed.username && parsed.nip_baru && parsed.has_account !== false) {
+        if (parsed && parsed.username && parsed.has_account !== false) {
           return parsed;
         }
       } catch (e) {
@@ -156,7 +157,7 @@ export function AuthProvider({ children }) {
 
   // Save changes to localStorage
   useEffect(() => {
-    localStorage.setItem('sigap_users_v4', JSON.stringify(users));
+    localStorage.setItem('sigap_users_v5', JSON.stringify(users));
   }, [users]);
 
   useEffect(() => {
@@ -295,11 +296,14 @@ export function AuthProvider({ children }) {
   };
 
   // Superadmin: Update User Details
-  const updateUser = (nip, updates) => {
+  const updateUser = (identifier, updates) => {
     setUsers(prev => prev.map(u => {
-      if (u.nip_baru === nip) {
+      const isMatch = (u.nip_baru && u.nip_baru !== '-' && u.nip_baru === identifier) || 
+                      (u.username && u.username === identifier) || 
+                      u.nip_baru === identifier;
+      if (isMatch) {
         const updated = { ...u, ...updates };
-        if (currentUser?.nip_baru === nip) {
+        if (currentUser?.nip_baru === identifier || currentUser?.username === identifier) {
           setCurrentUser(updated);
         }
         return updated;
@@ -310,7 +314,7 @@ export function AuthProvider({ children }) {
   };
 
   // Superadmin: Reset Any User's Password
-  const resetUserPassword = (nip, newPassword) => {
+  const resetUserPassword = (identifier, newPassword) => {
     if (currentUser?.role !== 'superadmin') {
       return { success: false, message: 'Hanya Superadmin yang dapat mereset kata sandi pengguna lain.' };
     }
@@ -321,10 +325,13 @@ export function AuthProvider({ children }) {
 
     let foundTarget = false;
     setUsers(prev => prev.map(u => {
-      if (u.nip_baru === nip) {
+      const isMatch = (u.nip_baru && u.nip_baru !== '-' && u.nip_baru === identifier) || 
+                      (u.username && u.username === identifier) || 
+                      u.nip_baru === identifier;
+      if (isMatch) {
         foundTarget = true;
         const updated = { ...u, password: newPassword };
-        if (currentUser?.nip_baru === nip) {
+        if (currentUser?.nip_baru === identifier || currentUser?.username === identifier) {
           setCurrentUser(updated);
         }
         return updated;
@@ -333,23 +340,28 @@ export function AuthProvider({ children }) {
     }));
 
     if (!foundTarget) {
-      return { success: false, message: 'Pengguna dengan NIP tersebut tidak ditemukan.' };
+      return { success: false, message: 'Pengguna tersebut tidak ditemukan.' };
     }
 
     return { success: true, message: 'Kata sandi pengguna berhasil diubah.' };
   };
 
   // Superadmin: Delete User Account
-  const deleteUser = (nip) => {
+  const deleteUser = (identifier) => {
     if (currentUser?.role !== 'superadmin') {
       return { success: false, message: 'Hanya Superadmin yang berwenang menghapus akun.' };
     }
 
-    if (currentUser?.nip_baru === nip) {
+    if (currentUser?.nip_baru === identifier || currentUser?.username === identifier) {
       return { success: false, message: 'Tidak dapat menghapus akun Anda sendiri yang sedang aktif digunakan.' };
     }
 
-    setUsers(prev => prev.filter(u => u.nip_baru !== nip));
+    setUsers(prev => prev.filter(u => {
+      const isMatch = (u.nip_baru && u.nip_baru !== '-' && u.nip_baru === identifier) || 
+                      (u.username && u.username === identifier) || 
+                      u.nip_baru === identifier;
+      return !isMatch;
+    }));
     return { success: true, message: 'Akun pegawai berhasil dihapus dari sistem.' };
   };
 
