@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { 
-  Bell, 
   Search, 
   LogOut, 
   ExternalLink, 
-  ChevronDown,
-  UserCircle,
-  ShieldCheck,
-  KeyRound
+  ChevronDown, 
+  UserCircle, 
+  ShieldCheck, 
+  KeyRound 
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import NotificationDropdown from './NotificationDropdown';
 
 export default function Topbar() {
   const navigate = useNavigate();
@@ -48,19 +48,8 @@ export default function Topbar() {
 
       {/* Right Controls */}
       <div className="flex items-center gap-3 ml-auto">
-        {/* Quick Notification for Pending / Revisi */}
-        <Link 
-          to="/pengajuan-spj?tab=Perlu%20Perbaikan"
-          className="relative p-2 text-purple-600 hover:text-purple-800 hover:bg-purple-50 rounded-xl transition"
-          title={`${perluPerbaikanCount} dokumen perlu perbaikan`}
-        >
-          <Bell className="w-5 h-5" />
-          {perluPerbaikanCount > 0 && (
-            <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-rose-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center ring-2 ring-white">
-              {perluPerbaikanCount}
-            </span>
-          )}
-        </Link>
+        {/* Local In-App Notification Center Dropdown */}
+        <NotificationDropdown />
 
         {/* Quick Portal Switch */}
         <Link

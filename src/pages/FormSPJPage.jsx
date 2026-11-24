@@ -16,12 +16,14 @@ import {
   Save
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 import { KODE_AKUN_LIST, TIM_KERJA_LIST } from '../lib/seedData';
 import { calculateTaxes } from '../lib/taxEngine';
 
 export default function FormSPJPage() {
   const navigate = useNavigate();
   const { currentUser, addTransaction, pegawaiList } = useAuth();
+  const { addNotification } = useNotification();
 
   const [step, setStep] = useState(1);
 
@@ -122,6 +124,20 @@ export default function FormSPJPage() {
     };
 
     addTransaction(newTx);
+
+    if (!isDirectDraft) {
+      addNotification({
+        title: 'Pengajuan SPJ Baru di Meja PPK',
+        message: `Pengajuan SPJ baru No. ${newTx.no_pengajuan} ("${newTx.uraian_kegiatan}") telah diajukan ke Meja PPK untuk peninjauan komitmen.`,
+        type: 'info',
+        category: 'disposisi',
+        targetRole: ['ppk', 'superadmin'],
+        no_spm: newTx.no_pengajuan,
+        transactionId: newTx.id,
+        link: `/pengajuan-spj/${newTx.id}`
+      });
+    }
+
     navigate(isDirectDraft ? '/pengajuan-spj' : '/pengajuan-spj?tab=Di%20PPK');
   };
 

@@ -24,6 +24,7 @@ import {
   UserCheck
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useNotification } from '../context/NotificationContext';
 import { KODE_AKUN_LIST } from '../lib/seedData';
 import { getDeskActionAuthority, DESK_CONFIG } from '../lib/permissions';
 import Badge from '../components/common/Badge';
@@ -32,6 +33,7 @@ export default function DetailSPJPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const { transactions, updateTransactionStatus, currentUser } = useAuth();
+  const { addNotification } = useNotification();
 
   const transaction = transactions.find(t => t.id === id) || transactions[0];
   const akun = KODE_AKUN_LIST.find(a => a.kode === transaction?.kode_akun) || KODE_AKUN_LIST[0];
@@ -58,6 +60,8 @@ export default function DetailSPJPage() {
     setCheckedDocs(prev => ({ ...prev, [doc]: !prev[doc] }));
   };
 
+  const noSpm = transaction.no_spm_spp || transaction.no_pengajuan || 'SPJ';
+
   // Actions per Desk: PJ -> PPK -> Bendahara -> PPSPM -> Arsip
   const handleApprovePPK = () => {
     updateTransactionStatus(transaction.id, {
@@ -66,6 +70,18 @@ export default function DetailSPJPage() {
       meja_berkas: 'Meja Bendahara (Verifikasi Kuitansi, Pajak & Kas)',
       review_ppk: reviewNote ? `Disetujui PPK: ${reviewNote}` : 'Komitmen disetujui PPK, diteruskan ke Meja Bendahara'
     });
+
+    addNotification({
+      title: 'Berkas Masuk ke Meja Bendahara',
+      message: `Berkas No. ${noSpm} (${transaction.uraian_kegiatan}) telah disetujui PPK dan siap diverifikasi kuitansi serta pajaknya.`,
+      type: 'info',
+      category: 'disposisi',
+      targetRole: ['bendahara', 'superadmin'],
+      no_spm: noSpm,
+      transactionId: transaction.id,
+      link: `/pengajuan-spj/${transaction.id}`
+    });
+
     setSuccessNotice('Dokumen berhasil disetujui PPK dan dipindahkan ke Meja Bendahara.');
     setReviewNote('');
     setTimeout(() => setSuccessNotice(''), 4000);
@@ -83,6 +99,19 @@ export default function DetailSPJPage() {
       catatan_kekurangan: reviewNote,
       review_ppk: `Perlu Perbaikan: ${reviewNote}`
     });
+
+    addNotification({
+      title: 'Perbaikan Berkas SPJ Diperlukan',
+      message: `PPK mengembalikan berkas No. ${noSpm} ke Meja PJ: "${reviewNote}".`,
+      type: 'warning',
+      category: 'revisi',
+      targetRole: ['pegawai', 'superadmin'],
+      targetNip: [transaction.pj_kegiatan_nip],
+      no_spm: noSpm,
+      transactionId: transaction.id,
+      link: `/pengajuan-spj/${transaction.id}`
+    });
+
     setSuccessNotice('Dokumen berhasil dikembalikan ke Meja PJ Kegiatan untuk perbaikan.');
     setReviewNote('');
     setTimeout(() => setSuccessNotice(''), 4000);
@@ -95,6 +124,18 @@ export default function DetailSPJPage() {
       meja_berkas: 'Meja PPSPM (Pengujian Formal & Penerbitan SPM)',
       review_bdh: reviewNote ? `Verifikasi Pajak & Kas: ${reviewNote}` : 'Kuitansi & potongan pajak lengkap, diteruskan ke Meja PPSPM'
     });
+
+    addNotification({
+      title: 'Pengujian SPM di Meja PPSPM',
+      message: `Kuitansi & pajak berkas No. ${noSpm} telah diverifikasi Bendahara dan diteruskan ke Meja PPSPM untuk penerbitan SPM.`,
+      type: 'info',
+      category: 'disposisi',
+      targetRole: ['ppspm', 'kpa', 'superadmin'],
+      no_spm: noSpm,
+      transactionId: transaction.id,
+      link: `/pengajuan-spj/${transaction.id}`
+    });
+
     setSuccessNotice('Dokumen diverifikasi Bendahara Pengeluaran dan diteruskan ke Meja PPSPM untuk pengujian SPM.');
     setReviewNote('');
     setTimeout(() => setSuccessNotice(''), 4000);
@@ -112,6 +153,19 @@ export default function DetailSPJPage() {
       catatan_kekurangan: `Catatan Bendahara: ${reviewNote}`,
       review_bdh: `Perlu Perbaikan: ${reviewNote}`
     });
+
+    addNotification({
+      title: 'Perbaikan Kuitansi / Pajak di Meja PJ',
+      message: `Bendahara meminta perbaikan kuitansi/pajak berkas No. ${noSpm}: "${reviewNote}".`,
+      type: 'warning',
+      category: 'revisi',
+      targetRole: ['pegawai', 'superadmin'],
+      targetNip: [transaction.pj_kegiatan_nip],
+      no_spm: noSpm,
+      transactionId: transaction.id,
+      link: `/pengajuan-spj/${transaction.id}`
+    });
+
     setSuccessNotice('Dokumen dikembalikan ke Meja PJ Kegiatan untuk perbaikan kuitansi/pajak.');
     setReviewNote('');
     setTimeout(() => setSuccessNotice(''), 4000);
@@ -126,6 +180,18 @@ export default function DetailSPJPage() {
       tanggal_sp2d: new Date().toISOString().split('T')[0],
       review_ppspm: reviewNote ? `SPM Diterbitkan: ${reviewNote}` : 'SPM resmi diterbitkan oleh PPSPM & disahkan lunas'
     });
+
+    addNotification({
+      title: 'SP2D Terbit & Berkas Lunas di Meja Arsip',
+      message: `Selamat! SPM No. ${noSpm} senilai Rp ${Number(transaction.jumlah_pembayaran || 0).toLocaleString('id-ID')} resmi diterbitkan dan dana cair.`,
+      type: 'success',
+      category: 'pencairan',
+      targetRole: ['all'],
+      no_spm: noSpm,
+      transactionId: transaction.id,
+      link: `/pengajuan-spj/${transaction.id}`
+    });
+
     setSuccessNotice('SPM resmi diterbitkan dan berkas disahkan lunas serta disimpan di Meja Arsip.');
     setReviewNote('');
     setTimeout(() => setSuccessNotice(''), 4000);
@@ -138,6 +204,18 @@ export default function DetailSPJPage() {
       meja_berkas: 'Meja Bendahara (Verifikasi Kuitansi, Pajak & Kas)',
       review_ppspm: reviewNote ? `Ditolak PPSPM: ${reviewNote}` : 'SPM belum memenuhi syarat pengujian, dikembalikan ke Bendahara'
     });
+
+    addNotification({
+      title: 'SPM Dikembalikan ke Meja Bendahara',
+      message: `PPSPM mengembalikan berkas No. ${noSpm} ke Bendahara: "${reviewNote}".`,
+      type: 'warning',
+      category: 'disposisi',
+      targetRole: ['bendahara', 'superadmin'],
+      no_spm: noSpm,
+      transactionId: transaction.id,
+      link: `/pengajuan-spj/${transaction.id}`
+    });
+
     setSuccessNotice('SPM ditolak dan dokumen dikembalikan ke Meja Bendahara.');
     setReviewNote('');
     setTimeout(() => setSuccessNotice(''), 4000);
@@ -151,6 +229,18 @@ export default function DetailSPJPage() {
       catatan_kekurangan: '',
       review_ppk: reviewNote ? `Perbaikan dari PJ: ${reviewNote}` : 'Dokumen perbaikan telah diunggah oleh PJ'
     });
+
+    addNotification({
+      title: 'Perbaikan SPJ Dikirim Kembali ke PPK',
+      message: `PJ Kegiatan telah mengunggah perbaikan untuk berkas No. ${noSpm} dan mengirimkannya kembali ke Meja PPK.`,
+      type: 'info',
+      category: 'disposisi',
+      targetRole: ['ppk', 'superadmin'],
+      no_spm: noSpm,
+      transactionId: transaction.id,
+      link: `/pengajuan-spj/${transaction.id}`
+    });
+
     setSuccessNotice('Dokumen berhasil diajukan ke Meja PPK.');
     setReviewNote('');
     setTimeout(() => setSuccessNotice(''), 4000);

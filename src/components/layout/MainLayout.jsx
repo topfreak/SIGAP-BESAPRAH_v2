@@ -2,6 +2,7 @@ import React from 'react';
 import { Outlet, Navigate, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
 import Topbar from './Topbar';
+import ToastContainer from '../common/ToastContainer';
 import { useAuth } from '../../context/AuthContext';
 
 export default function MainLayout() {
@@ -14,7 +15,7 @@ export default function MainLayout() {
   }
 
   return (
-    <div className="flex min-h-screen bg-[#FAF9FF]">
+    <div className="flex min-h-screen bg-[#FAF9FF] relative">
       {/* Sidebar Nav */}
       <Sidebar />
 
@@ -25,6 +26,9 @@ export default function MainLayout() {
           <Outlet />
         </main>
       </div>
+
+      {/* In-App Floating Toast Notification Center */}
+      <ToastContainer />
     </div>
   );
 }
