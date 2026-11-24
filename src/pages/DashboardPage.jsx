@@ -8,7 +8,6 @@ import {
   TrendingUp, 
   FileText, 
   ShieldCheck, 
-  Milestone,
   ArrowRight,
   ExternalLink,
   Crown
@@ -82,28 +81,21 @@ export default function DashboardPage() {
           </div>
 
           {/* Quick Action Buttons */}
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex items-center gap-3 shrink-0">
             {canAccess('/pengajuan-spj/baru') && (
               <Link
                 to="/pengajuan-spj/baru"
-                className="px-4 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-purple-950 font-extrabold text-xs shadow-md hover:shadow-lg transition flex items-center gap-2 transform active:scale-95"
+                className="h-10 px-4 rounded-xl bg-amber-400 hover:bg-amber-300 text-purple-950 font-bold text-xs shadow-md hover:shadow-lg transition-all flex items-center gap-2 transform active:scale-95"
               >
                 <FilePlus2 className="w-4 h-4" />
                 <span>+ Buat SPJ Baru</span>
               </Link>
             )}
             <Link
-              to="/panduan-alur"
-              className="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs border border-white/20 backdrop-blur-sm transition flex items-center gap-2"
-            >
-              <Milestone className="w-4 h-4 text-purple-300" />
-              <span>Panduan Alur 5 Meja</span>
-            </Link>
-            <Link
               to="/pengajuan-spj"
-              className="px-3.5 py-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs border border-white/20 backdrop-blur-sm transition flex items-center gap-2"
+              className="h-10 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold text-xs border border-white/20 backdrop-blur-sm transition-all flex items-center gap-2 hover:border-white/40"
             >
-              <FileSpreadsheet className="w-4 h-4 text-purple-300" />
+              <FileSpreadsheet className="w-4 h-4 text-purple-200" />
               <span>Daftar SPJ</span>
             </Link>
           </div>
