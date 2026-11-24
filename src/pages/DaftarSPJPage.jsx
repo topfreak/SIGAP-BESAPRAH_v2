@@ -380,18 +380,19 @@ export default function DaftarSPJPage() {
                     />
                   </th>
                 )}
-                <th className="py-3 px-3 w-[15%]">No. SPM & Jalur</th>
-                <th className="py-3 px-3 w-[30%]">Uraian Kegiatan & Tim</th>
-                <th className="py-3 px-3 w-[20%]">📍 Posisi Meja Berkas</th>
-                <th className="py-3 px-3 w-[14%]">PJ & Pengaju</th>
-                <th className="py-3 px-3 w-[14%] text-right">Pembayaran (Netto)</th>
+                <th className="py-3 px-3 w-[14%]">No. SPM & Jalur</th>
+                <th className="py-3 px-3 w-[25%]">Uraian Kegiatan & Tim</th>
+                <th className="py-3 px-3 w-[15%]">📍 Posisi Meja Berkas</th>
+                <th className="py-3 px-3 w-[13%]">📋 Kelengkapan Berkas</th>
+                <th className="py-3 px-3 w-[13%]">PJ & Pengaju</th>
+                <th className="py-3 px-3 w-[13%] text-right">Pembayaran (Netto)</th>
                 <th className="py-3 px-2 w-[7%] text-center">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-purple-50">
               {filteredData.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center text-slate-400">
+                  <td colSpan={isPimpinanOrKeuangan ? 8 : 7} className="py-12 text-center text-slate-400">
                     <AlertCircle className="w-7 h-7 text-purple-300 mx-auto mb-2" />
                     <p className="font-semibold text-slate-600">Tidak ada pengajuan yang sesuai dengan kriteria filter.</p>
                   </td>
@@ -455,17 +456,17 @@ export default function DaftarSPJPage() {
                         </div>
                       </td>
 
-                      {/* Col 3: Posisi Meja Berkas (KETERANGAN MEJA SANGAT JELAS) */}
+                      {/* Col 3: Posisi Meja Berkas Saat Ini */}
                       <td className="py-2.5 px-3">
-                        <div className="space-y-1">
-                          <Badge meja={item.meja_berkas || item.posisi_dokumen} type="meja" />
-                          <div className="flex items-center gap-1 text-[10px]">
-                            <Badge status={item.kelengkapan_dokumen || 'BELUM LENGKAP'} type="kelengkapan" />
-                          </div>
-                        </div>
+                        <Badge meja={item.meja_berkas || item.posisi_dokumen} type="meja" />
                       </td>
 
-                      {/* Col 4: PJ & Pengaju */}
+                      {/* Col 4: Status Kelengkapan Dokumen */}
+                      <td className="py-2.5 px-3">
+                        <Badge status={item.kelengkapan_dokumen || 'BELUM LENGKAP'} type="kelengkapan" />
+                      </td>
+
+                      {/* Col 5: PJ & Pengaju */}
                       <td className="py-2.5 px-3">
                         <div className="font-semibold text-slate-800 text-[11px] truncate" title={item.pj_nama}>
                           {item.pj_nama}
@@ -536,10 +537,16 @@ export default function DaftarSPJPage() {
                 </div>
               </div>
 
-              {/* Meja Indicator */}
-              <div className="p-2.5 rounded-2xl bg-purple-50/70 border border-purple-100 space-y-1">
-                <span className="text-[10px] text-slate-500 font-semibold block">Posisi Berkas Saat Ini:</span>
-                <Badge meja={item.meja_berkas || item.posisi_dokumen} type="meja" />
+              {/* Meja & Kelengkapan Indicator */}
+              <div className="grid grid-cols-2 gap-2 p-2.5 rounded-2xl bg-purple-50/70 border border-purple-100">
+                <div>
+                  <span className="text-[10px] text-slate-500 font-semibold block mb-1">Posisi Meja:</span>
+                  <Badge meja={item.meja_berkas || item.posisi_dokumen} type="meja" />
+                </div>
+                <div>
+                  <span className="text-[10px] text-slate-500 font-semibold block mb-1">Kelengkapan:</span>
+                  <Badge status={item.kelengkapan_dokumen || 'BELUM LENGKAP'} type="kelengkapan" />
+                </div>
               </div>
 
               <div className="flex items-center justify-between pt-2 border-t border-purple-50 text-xs">
