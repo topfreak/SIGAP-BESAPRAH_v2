@@ -11,6 +11,15 @@ import {
   ChevronRight
 } from 'lucide-react';
 
+// Helper format singkatan nominal dalam Bahasa Indonesia (jt / Miliar)
+function formatJutaRupiah(val) {
+  if (!val && val !== 0) return '0 jt';
+  if (val >= 1000000000) {
+    return `${(val / 1000000000).toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} M`;
+  }
+  return `${(val / 1000000).toLocaleString('id-ID', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} jt`;
+}
+
 export default function DashboardCharts({ transactions = [] }) {
   // Mode tampilan grafik proporsi: 'kategori' atau 'mekanisme'
   const [donutMode, setDonutMode] = useState('kategori');
@@ -372,7 +381,7 @@ export default function DashboardCharts({ transactions = [] }) {
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Total</span>
                   <span className="font-mono text-sm font-black text-purple-950">
-                    Rp {(totalNominal / 1000000).toFixed(1)}M
+                    Rp {formatJutaRupiah(totalNominal)}
                   </span>
                   <span className="text-[9px] text-slate-400 font-semibold">{totalBerkas} Berkas</span>
                 </div>
@@ -394,7 +403,7 @@ export default function DashboardCharts({ transactions = [] }) {
                     <div className="text-right flex-shrink-0 font-mono">
                       <span className="font-bold text-slate-900 text-xs">{item.percent}%</span>
                       <span className="text-[10px] text-slate-400 block">
-                        {(item.nominal / 1000000).toFixed(1)} jt
+                        {formatJutaRupiah(item.nominal)}
                       </span>
                     </div>
                   </div>
@@ -496,7 +505,7 @@ export default function DashboardCharts({ transactions = [] }) {
             <span>
               Serapan tertinggi:{' '}
               <strong className="text-purple-900">
-                {topTim ? `Tim ${topTim.nama} (Rp ${(topTim.nominal / 1000000).toFixed(1)} Juta)` : '-'}
+                {topTim ? `Tim ${topTim.nama} (Rp ${formatJutaRupiah(topTim.nominal)})` : '-'}
               </strong>
             </span>
             <Link to="/pengajuan-spj" className="text-purple-700 font-bold hover:underline flex items-center gap-1">
