@@ -21,6 +21,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { TIM_KERJA_LIST } from '../lib/seedData';
 import Badge from '../components/common/Badge';
+import DashboardCharts from '../components/dashboard/DashboardCharts';
 
 export default function DashboardPage() {
   const { currentUser, transactions, canAccess } = useAuth();
@@ -247,6 +248,9 @@ export default function DashboardPage() {
           ))}
         </div>
       </div>
+
+      {/* Visualisasi Grafik Interaktif Realisasi SPJ */}
+      <DashboardCharts transactions={transactions} />
 
       {/* Dokumen Perlu Perbaikan Segera */}
       <div className="p-6 rounded-3xl bg-white border border-purple-100 shadow-xs">
