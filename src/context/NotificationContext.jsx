@@ -156,17 +156,25 @@ export function NotificationProvider({ children }) {
 
     setNotifications(prev => [newNotif, ...prev]);
 
-    // Tampilkan toast pop-up jika relevan dengan user yang sedang aktif
-    triggerToast({
-      title,
-      message,
-      type,
-      link,
-      no_spm
-    });
+    // Tampilkan toast pop-up HANYA jika relevan dengan user yang sedang aktif saat ini
+    const isSuperadmin = currentUser?.role === 'superadmin';
+    const isTarget = !currentUser || isSuperadmin ||
+      targetRole?.includes('all') ||
+      targetRole?.includes(currentUser.role) ||
+      (targetNip && targetNip.includes(currentUser.nip_baru));
+
+    if (isTarget) {
+      triggerToast({
+        title,
+        message,
+        type,
+        link,
+        no_spm
+      });
+    }
 
     return newNotif;
-  }, [triggerToast]);
+  }, [triggerToast, currentUser]);
 
   // Tandai notifikasi spesifik sebagai sudah dibaca
   const markAsRead = useCallback((notifId) => {
