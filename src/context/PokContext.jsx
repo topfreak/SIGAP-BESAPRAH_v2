@@ -1,8 +1,14 @@
 import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuth } from './AuthContext';
 import { INITIAL_POK_ACCOUNTS, INITIAL_RKK_METADATA } from '../lib/pokRpdData';
+import { mergeImportedPokAccounts } from '../lib/rkkSaktiParser';
 
 const PokContext = createContext();
+
+const STORAGE_KEYS = {
+  metadata: 'sigap_pok_metadata_v2',
+  accounts: 'sigap_pok_accounts_v2'
+};
 
 export function PokProvider({ children }) {
   const { transactions } = useAuth();
@@ -10,7 +16,7 @@ export function PokProvider({ children }) {
   // State Metadata RKK SAKTI
   const [metadata, setMetadata] = useState(() => {
     try {
-      const saved = localStorage.getItem('sigap_pok_metadata_v1');
+      const saved = localStorage.getItem(STORAGE_KEYS.metadata);
       if (saved) return JSON.parse(saved);
     } catch (e) {}
     return INITIAL_RKK_METADATA;
@@ -19,7 +25,7 @@ export function PokProvider({ children }) {
   // State Akun POK & Target RPD 12 Bulan
   const [rawPokAccounts, setRawPokAccounts] = useState(() => {
     try {
-      const saved = localStorage.getItem('sigap_pok_accounts_v1');
+      const saved = localStorage.getItem(STORAGE_KEYS.accounts);
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
@@ -31,8 +37,8 @@ export function PokProvider({ children }) {
   // Simpan perubahan ke localStorage
   useEffect(() => {
     try {
-      localStorage.setItem('sigap_pok_metadata_v1', JSON.stringify(metadata));
-      localStorage.setItem('sigap_pok_accounts_v1', JSON.stringify(rawPokAccounts));
+      localStorage.setItem(STORAGE_KEYS.metadata, JSON.stringify(metadata));
+      localStorage.setItem(STORAGE_KEYS.accounts, JSON.stringify(rawPokAccounts));
     } catch (e) {
       console.error('Gagal menyimpan data POK ke localStorage:', e);
     }
@@ -183,15 +189,30 @@ export function PokProvider({ children }) {
 
   /**
    * Menerapkan data POK baru hasil Import XLSX / PDF RKK SAKTI
+   * Jika file tidak memuat kolom bulan (RKK murni), gabungkan cerdas dengan jadwal RPD & Realisasi baseline/aktif.
    */
-  const applyImportedPok = useCallback((newAccounts, newMetadata) => {
+  const applyImportedPok = useCallback((newAccounts, newMetadata, hasMonthlyRpd = false) => {
     if (Array.isArray(newAccounts) && newAccounts.length > 0) {
-      setRawPokAccounts(newAccounts);
-      setMetadata(prev => ({ ...prev, ...newMetadata }));
+      const baselineForMerge = rawPokAccounts.length >= INITIAL_POK_ACCOUNTS.length
+        ? rawPokAccounts
+        : INITIAL_POK_ACCOUNTS;
+      const { accounts: merged, matchedCount } = mergeImportedPokAccounts(
+        newAccounts,
+        baselineForMerge,
+        hasMonthlyRpd
+      );
+      setRawPokAccounts(merged);
+      setMetadata(prev => ({
+        ...prev,
+        ...newMetadata,
+        sumber_import: !hasMonthlyRpd && matchedCount > 0
+          ? `${newMetadata?.sumber_import || 'Import RKK SAKTI'} • Smart Merge RPD 12 Bln (${matchedCount} akun)`
+          : (newMetadata?.sumber_import || prev.sumber_import)
+      }));
       return true;
     }
     return false;
-  }, []);
+  }, [rawPokAccounts]);
 
   /**
    * Memperbarui jadwal penarikan RPD 12 bulan (atau memperbarui pagu revisi)
@@ -213,6 +234,8 @@ export function PokProvider({ children }) {
   const resetToDefaultPok = useCallback(() => {
     setRawPokAccounts(INITIAL_POK_ACCOUNTS);
     setMetadata(INITIAL_RKK_METADATA);
+    localStorage.removeItem(STORAGE_KEYS.accounts);
+    localStorage.removeItem(STORAGE_KEYS.metadata);
     localStorage.removeItem('sigap_pok_accounts_v1');
     localStorage.removeItem('sigap_pok_metadata_v1');
   }, []);

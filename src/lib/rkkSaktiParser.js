@@ -97,6 +97,7 @@ export async function parseRkkExcel(file) {
     outputNama: '',
     komponenKode: '',
     komponenNama: '',
+    subKomponenKode: 'A',
     subKomponen: 'A - TANPA SUB KOMPONEN',
     currentAccount: null
   };
@@ -157,10 +158,12 @@ export async function parseRkkExcel(file) {
       ctx.komponenNama = uraian;
       ctx.currentAccount = null;
     } else if (reSubKomp.test(code)) {
+      ctx.subKomponenKode = code;
       ctx.subKomponen = `${code} - ${uraian || 'SUB KOMPONEN'}`;
+      ctx.currentAccount = null;
     } else if (reAkun.test(code) || (col1 && reAkun.test(col1))) {
       const kodeAkun = reAkun.test(code) ? code : col1;
-      const namaAkun = String(row[3] || row[2] || uraian || `Akun ${kodeAkun}`).trim();
+      const namaAkun = String(row[3] || row[2] || uraian || `Akun ${kodeAkun}`).trim().replace(/'$/, '');
 
       let rpdBulanan = new Array(12).fill(0);
       let realisasiAwal = new Array(12).fill(0);
@@ -174,7 +177,7 @@ export async function parseRkkExcel(file) {
         rpdBulanan = buildDefaultMonthlyRpd(rowPagu);
       }
 
-      const accId = `${ctx.outputKode || ctx.kegiatanKode}-${ctx.komponenKode || '000'}-${kodeAkun}-${accounts.length}`;
+      const accId = `${ctx.outputKode || ctx.kegiatanKode}-${ctx.komponenKode || '000'}-${ctx.subKomponenKode || 'A'}-${kodeAkun}-${accounts.length}`;
       const newAcc = {
         id: accId,
         programKode: ctx.programKode,
@@ -185,6 +188,7 @@ export async function parseRkkExcel(file) {
         outputNama: ctx.outputNama,
         komponenKode: ctx.komponenKode,
         komponenNama: ctx.komponenNama,
+        subKomponenKode: ctx.subKomponenKode || 'A',
         subKomponen: ctx.subKomponen,
         timKerja: detectTimKerjaByKegiatan(ctx.kegiatanKode, `${ctx.kegiatanNama} ${ctx.outputNama}`),
         kodeAkun,
@@ -200,13 +204,13 @@ export async function parseRkkExcel(file) {
       ctx.currentAccount = newAcc;
     } else if (ctx.currentAccount) {
       // Baris rincian item (volume / satuan / harga satuan)
-      const isItemDash = String(row[3] || '').trim() === '-' || String(row[4] || '').trim().length > 2;
-      const itemDesc = String(row[4] || row[3] || row[2] || '').trim();
+      const col3 = String(row[3] || '').trim();
+      const itemDesc = String(row[4] || '').trim() || (col3 !== '-' ? col3 : '');
       const volRaw = String(row[6] || '').trim();
       const harga = parseNum(row[7]);
       const jumlah = parseNum(row[9] || row[8]);
 
-      if (itemDesc && !itemDesc.toLowerCase().includes('kppn') && (jumlah > 0 || harga > 0 || isItemDash)) {
+      if (itemDesc && !itemDesc.toLowerCase().includes('kppn') && !itemDesc.toLowerCase().includes('lokasi') && (jumlah > 0 || harga > 0)) {
         const volMatch = volRaw.match(/^([\d.,]+)\s*(.*)$/);
         ctx.currentAccount.items.push({
           deskripsi: itemDesc,
@@ -283,7 +287,7 @@ export async function parseRkkPdf(file) {
   }
 
   const accounts = [];
-  let ctx = {
+  let ctxPdf = {
     programKode: '054.01.GG',
     programNama: 'Program Penyediaan dan Pelayanan Informasi Statistik',
     kegiatanKode: '',
@@ -292,6 +296,7 @@ export async function parseRkkPdf(file) {
     outputNama: '',
     komponenKode: '',
     komponenNama: '',
+    subKomponenKode: 'A',
     subKomponen: 'A - TANPA SUB KOMPONEN',
     currentAccount: null
   };
@@ -319,29 +324,37 @@ export async function parseRkkPdf(file) {
 
     // 1. Cek Program
     if (/^\d{3}\.\d{2}\.[A-Z0-9]{2}$/.test(firstToken)) {
-      ctx.programKode = firstToken;
-      ctx.programNama = items.slice(1, -1).map(i => i.text).join(' ') || ctx.programNama;
+      ctxPdf.programKode = firstToken;
+      ctxPdf.programNama = items.slice(1, -1).map(i => i.text).join(' ') || ctxPdf.programNama;
       continue;
     }
 
     // 2. Cek Output RO (misal 2896.BMA.004)
     if (/^\d{4}\.[A-Z]{3}\.[A-Z0-9]{3}$/.test(firstToken)) {
-      ctx.outputKode = firstToken;
-      ctx.outputNama = items.slice(1).filter(i => !/^[\d,]+$/.test(i.text)).map(i => i.text).join(' ');
+      ctxPdf.outputKode = firstToken;
+      ctxPdf.outputNama = items.slice(1).filter(i => !/^[\d,]+$/.test(i.text)).map(i => i.text).join(' ');
       continue;
     }
 
     // 3. Cek Kegiatan 4 digit (misal 2902)
     if (/^\d{4}$/.test(firstToken)) {
-      ctx.kegiatanKode = firstToken;
-      ctx.kegiatanNama = items.slice(1).filter(i => !/^[\d,]+$/.test(i.text)).map(i => i.text).join(' ');
+      ctxPdf.kegiatanKode = firstToken;
+      ctxPdf.kegiatanNama = items.slice(1).filter(i => !/^[\d,]+$/.test(i.text)).map(i => i.text).join(' ');
       continue;
     }
 
     // 4. Cek Komponen 3 digit (misal 051, 005, 530)
     if (/^\d{3}$/.test(firstToken) && items.length >= 2) {
-      ctx.komponenKode = firstToken;
-      ctx.komponenNama = items.slice(1).filter(i => !/^[\d,]+$/.test(i.text) && i.text !== 'U' && i.text !== 'P').map(i => i.text).join(' ');
+      ctxPdf.komponenKode = firstToken;
+      ctxPdf.komponenNama = items.slice(1).filter(i => !/^[\d,]+$/.test(i.text) && i.text !== 'U' && i.text !== 'P').map(i => i.text).join(' ');
+      continue;
+    }
+
+    // 4B. Cek SubKomponen 1 huruf (misal A, B, C)
+    if (/^[A-Z]$/.test(firstToken) && items.length >= 2) {
+      const subName = items.slice(1).filter(i => !/^[\d,]+$/.test(i.text)).map(i => i.text).join(' ');
+      ctxPdf.subKomponenKode = firstToken;
+      ctxPdf.subKomponen = `${firstToken} - ${subName || 'SUB KOMPONEN'}`;
       continue;
     }
 
@@ -370,19 +383,20 @@ export async function parseRkkPdf(file) {
     }
 
     if (matchedAkun) {
-      const accId = `${ctx.outputKode || ctx.kegiatanKode}-${ctx.komponenKode || '000'}-${matchedAkun}-${accounts.length}`;
+      const accId = `${ctxPdf.outputKode || ctxPdf.kegiatanKode}-${ctxPdf.komponenKode || '000'}-${ctxPdf.subKomponenKode || 'A'}-${matchedAkun}-${accounts.length}`;
       const newAcc = {
         id: accId,
-        programKode: ctx.programKode,
-        programNama: ctx.programNama,
-        kegiatanKode: ctx.kegiatanKode,
-        kegiatanNama: ctx.kegiatanNama,
-        outputKode: ctx.outputKode,
-        outputNama: ctx.outputNama,
-        komponenKode: ctx.komponenKode,
-        komponenNama: ctx.komponenNama,
-        subKomponen: ctx.subKomponen,
-        timKerja: detectTimKerjaByKegiatan(ctx.kegiatanKode, `${ctx.kegiatanNama} ${ctx.outputNama}`),
+        programKode: ctxPdf.programKode,
+        programNama: ctxPdf.programNama,
+        kegiatanKode: ctxPdf.kegiatanKode,
+        kegiatanNama: ctxPdf.kegiatanNama,
+        outputKode: ctxPdf.outputKode,
+        outputNama: ctxPdf.outputNama,
+        komponenKode: ctxPdf.komponenKode,
+        komponenNama: ctxPdf.komponenNama,
+        subKomponenKode: ctxPdf.subKomponenKode || 'A',
+        subKomponen: ctxPdf.subKomponen,
+        timKerja: detectTimKerjaByKegiatan(ctxPdf.kegiatanKode, `${ctxPdf.kegiatanNama} ${ctxPdf.outputNama}`),
         kodeAkun: matchedAkun,
         namaAkun: akunNama || `Belanja Akun ${matchedAkun}`,
         sumberDana: 'RM',
@@ -392,15 +406,15 @@ export async function parseRkkPdf(file) {
         items: []
       };
       accounts.push(newAcc);
-      ctx.currentAccount = newAcc;
+      ctxPdf.currentAccount = newAcc;
       continue;
     }
 
     // 6. Cek baris detail item (diawali '-' atau memiliki pola Volume + Satuan + Harga + Jumlah)
-    if (ctx.currentAccount) {
+    if (ctxPdf.currentAccount) {
       const itemMatch = lineStr.match(/^[-]?\s*(.+?)\s+(\d+(?:\.\d+)?)\s+([A-Za-z/-]+)\s+([\d,]+)\s+([\d,]+)(?:\s+\*)?$/);
       if (itemMatch) {
-        ctx.currentAccount.items.push({
+        ctxPdf.currentAccount.items.push({
           deskripsi: itemMatch[1].replace(/^-\s*/, '').trim(),
           volume: parseFloat(itemMatch[2]) || 1,
           satuan: itemMatch[3],
@@ -421,6 +435,115 @@ export async function parseRkkPdf(file) {
       pdfPages: pdf.numPages
     }
   };
+}
+
+/**
+ * SMART MERGE: Saat mengimpor dokumen RKK SAKTI murni (tanpa kolom Jan–Des),
+ * pertahankan jadwal RPD & realisasi Jan–Des dari data baseline/aktif yang cocok,
+ * lalu sesuaikan hanya selisih pagu revisi pada akhir tahun agar deviasi IKPA tetap akurat.
+ */
+export function mergeImportedPokAccounts(incomingAccounts, existingAccounts = [], hasMonthlyRpd = false) {
+  if (!Array.isArray(incomingAccounts) || incomingAccounts.length === 0) {
+    return { accounts: [], matchedCount: 0, newCount: 0 };
+  }
+
+  if (hasMonthlyRpd || !Array.isArray(existingAccounts) || existingAccounts.length === 0) {
+    return {
+      accounts: incomingAccounts,
+      matchedCount: incomingAccounts.length,
+      newCount: 0
+    };
+  }
+
+  const usedIndices = new Set();
+
+  const findMatch = (inc) => {
+    const subInc = inc.subKomponenKode || (inc.subKomponen ? inc.subKomponen.charAt(0) : 'A');
+
+    // Tier 1: Output + Komponen + SubKomponen + Akun
+    let idx = existingAccounts.findIndex((ex, i) =>
+      !usedIndices.has(i) &&
+      ex.outputKode === inc.outputKode &&
+      ex.komponenKode === inc.komponenKode &&
+      (ex.subKomponenKode || (ex.subKomponen ? ex.subKomponen.charAt(0) : 'A')) === subInc &&
+      ex.kodeAkun === inc.kodeAkun
+    );
+
+    // Tier 2: Output + Komponen + Akun
+    if (idx === -1) {
+      idx = existingAccounts.findIndex((ex, i) =>
+        !usedIndices.has(i) &&
+        ex.outputKode === inc.outputKode &&
+        ex.komponenKode === inc.komponenKode &&
+        ex.kodeAkun === inc.kodeAkun
+      );
+    }
+
+    // Tier 3: Kegiatan + Komponen + Akun
+    if (idx === -1) {
+      idx = existingAccounts.findIndex((ex, i) =>
+        !usedIndices.has(i) &&
+        ex.kegiatanKode === inc.kegiatanKode &&
+        ex.komponenKode === inc.komponenKode &&
+        ex.kodeAkun === inc.kodeAkun
+      );
+    }
+
+    if (idx !== -1) {
+      usedIndices.add(idx);
+      return existingAccounts[idx];
+    }
+    return null;
+  };
+
+  let matchedCount = 0;
+  let newCount = 0;
+
+  const mergedAccounts = incomingAccounts.map((inc) => {
+    const match = findMatch(inc);
+    if (!match) {
+      newCount++;
+      return inc;
+    }
+
+    matchedCount++;
+    const preservedReal = [...(match.realisasiAwal || new Array(12).fill(0))];
+    const preservedRpd = [...(match.rpdBulanan || new Array(12).fill(0))];
+
+    // Selisih pagu revisi antara RKK baru dengan total RPD yang ada
+    const currentRpdTotal = preservedRpd.reduce((a, b) => a + b, 0);
+    let delta = (inc.pagu || 0) - currentRpdTotal;
+
+    if (delta > 0) {
+      // Penambahan alokasi pagu diarahkan ke bulan Desember (akhir tahun)
+      preservedRpd[11] = (preservedRpd[11] || 0) + delta;
+    } else if (delta < 0) {
+      // Pengurangan/blokir pagu memangkas dari Desember mundur ke bulan sebelumnya tanpa mengganggu realisasi
+      let toCut = Math.abs(delta);
+      for (let mIdx = 11; mIdx >= 0 && toCut > 0; mIdx--) {
+        const floorVal = preservedReal[mIdx] || 0;
+        const reducible = Math.max(0, (preservedRpd[mIdx] || 0) - floorVal);
+        const cut = Math.min(reducible, toCut);
+        preservedRpd[mIdx] -= cut;
+        toCut -= cut;
+      }
+      // Jika masih tersisa selisih (misal karena RPD sudah di bawah realisasi), kurangi dari Desember min 0
+      for (let mIdx = 11; mIdx >= 0 && toCut > 0; mIdx--) {
+        const cut = Math.min(preservedRpd[mIdx] || 0, toCut);
+        preservedRpd[mIdx] -= cut;
+        toCut -= cut;
+      }
+    }
+
+    return {
+      ...inc,
+      id: match.id, // Pertahankan ID agar relasi transaksi SPJ yang sudah tertaut tetap utuh
+      rpdBulanan: preservedRpd,
+      realisasiAwal: preservedReal
+    };
+  });
+
+  return { accounts: mergedAccounts, matchedCount, newCount };
 }
 
 /**

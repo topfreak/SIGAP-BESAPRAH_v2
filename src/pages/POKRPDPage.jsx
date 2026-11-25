@@ -135,7 +135,11 @@ export default function POKRPDPage() {
 
   const confirmImport = () => {
     if (!importPreview) return;
-    applyImportedPok(importPreview.accounts, importPreview.metadata);
+    applyImportedPok(
+      importPreview.accounts,
+      importPreview.metadata,
+      Boolean(importPreview.summary?.hasMonthlyRpd)
+    );
     setShowImportModal(false);
     setImportPreview(null);
   };
@@ -712,10 +716,18 @@ export default function POKRPDPage() {
                     <div className="p-2.5 bg-white rounded-xl border border-emerald-100">
                       <span className="text-[10px] text-slate-400 block">Struktur RPD Bulanan</span>
                       <span className="font-bold text-slate-800">
-                        {importPreview.summary.hasMonthlyRpd ? 'Tersedia (12 Bulan)' : 'Distribusi Otomatis Awal'}
+                        {importPreview.summary.hasMonthlyRpd
+                          ? 'Lengkap dari File (Jan–Des)'
+                          : 'Smart Merge (Pertahankan RPD Jan–Des)'}
                       </span>
                     </div>
                   </div>
+
+                  {!importPreview.summary.hasMonthlyRpd && (
+                    <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-[11px] text-amber-900 leading-relaxed">
+                      File RKK SAKTI murni tidak memiliki kolom bulan Jan–Des. Sistem akan <strong>mempertahankan jadwal RPD &amp; realisasi Jan–Des yang sudah ada</strong> pada akun yang cocok dan hanya menyesuaikan selisih pagu revisi.
+                    </div>
+                  )}
 
                   <div className="max-h-36 overflow-y-auto bg-white rounded-xl border border-emerald-100 p-2 text-[11px] space-y-1">
                     {importPreview.accounts.slice(0, 6).map((a, i) => (
