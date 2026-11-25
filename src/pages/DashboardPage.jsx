@@ -10,13 +10,17 @@ import {
   ShieldCheck, 
   ArrowRight,
   ExternalLink,
-  Crown
+  Crown,
+  Layers,
+  Gauge
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { usePok } from '../context/PokContext';
 import DashboardCharts from '../components/dashboard/DashboardCharts';
 
 export default function DashboardPage() {
   const { currentUser, transactions, canAccess } = useAuth();
+  const { rekapSatker, metadata } = usePok();
 
   // Statistics
   const total = transactions.length;
@@ -199,6 +203,53 @@ export default function DashboardPage() {
           </div>
         </Link>
       </div>
+
+      {/* 2B. RINGKASAN EKSEKUTIF POK & RPD HALAMAN III DIPA (SAKTI) */}
+      {canAccess('/pok-rpd') && rekapSatker && (
+        <div className="p-5 rounded-3xl bg-gradient-to-r from-purple-50/90 via-white to-indigo-50/80 border border-purple-200/80 shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-5">
+          <div className="flex items-start gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-purple-700 to-indigo-700 text-white flex items-center justify-center shrink-0 shadow-md">
+              <Layers className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 className="text-sm font-extrabold text-slate-900">
+                  Realisasi POK & RPD Halaman III DIPA ({metadata?.tahunAnggaran || 2026})
+                </h3>
+                <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold border ${
+                  rekapSatker.avgDeviasiIkpa <= 5
+                    ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                    : rekapSatker.avgDeviasiIkpa <= 10
+                      ? 'bg-amber-50 text-amber-800 border-amber-200'
+                      : 'bg-red-50 text-red-700 border-red-200'
+                }`}>
+                  Deviasi IKPA: {String(rekapSatker.avgDeviasiIkpa).replace('.', ',')}% ({rekapSatker.statusIkpa})
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Pagu DIPA: <strong className="text-slate-800">{formatIDR(rekapSatker.totalPagu)}</strong> • Terealisasi & Arsip: <strong className="text-emerald-700">{formatIDR(rekapSatker.totalRealisasi)} ({String(rekapSatker.persenSerapan).replace('.', ',')}%)</strong> • Komitmen Berjalan: <strong className="text-amber-700">{formatIDR(rekapSatker.totalOnProgress)}</strong>
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 shrink-0">
+            <div className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-2xl bg-white border border-purple-100 text-xs">
+              <Gauge className="w-4 h-4 text-purple-600" />
+              <div>
+                <span className="block text-[10px] text-slate-400 font-semibold leading-none">Sisa Anggaran</span>
+                <span className="font-extrabold text-purple-950">{formatIDR(rekapSatker.totalSisa)}</span>
+              </div>
+            </div>
+            <Link
+              to="/pok-rpd"
+              className="px-4 py-2.5 rounded-2xl bg-purple-900 hover:bg-purple-800 text-white font-bold text-xs shadow-sm flex items-center gap-1.5 transition"
+            >
+              <span>Kelola POK & RPD</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* 3. PUSAT GRAFIK & ANALISIS TERPADU */}
       <DashboardCharts transactions={transactions} />

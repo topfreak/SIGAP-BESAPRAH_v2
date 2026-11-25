@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { 
   FilePlus2, 
@@ -13,19 +13,30 @@ import {
   HelpCircle,
   UserCheck,
   ShieldCheck,
-  Save
+  Save,
+  Eye,
+  Trash2,
+  Layers,
+  Coins
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
+import { usePok } from '../context/PokContext';
 import { KODE_AKUN_LIST, TIM_KERJA_LIST } from '../lib/seedData';
 import { calculateTaxes } from '../lib/taxEngine';
+import { documentVault, formatFileSize } from '../lib/documentVault';
+import DocumentViewerModal from '../components/common/DocumentViewerModal';
 
 export default function FormSPJPage() {
   const navigate = useNavigate();
   const { currentUser, addTransaction, pegawaiList } = useAuth();
   const { addNotification } = useNotification();
+  const { pokAccounts, getAccountById } = usePok();
 
   const [step, setStep] = useState(1);
+
+  // Default POK account match
+  const defaultPokAccount = pokAccounts.find(a => a.kodeAkun === '521213') || pokAccounts[0];
 
   // Form state
   const [formData, setFormData] = useState({
@@ -33,7 +44,8 @@ export default function FormSPJPage() {
     tim_kerja: currentUser?.tim_kerja || 'Produksi',
     pj_kegiatan_nip: currentUser?.role === 'pj_kegiatan' ? currentUser?.nip_baru : (pegawaiList.find(p => p.role === 'pj_kegiatan')?.nip_baru || pegawaiList[0]?.nip_baru),
     mekanisme_ls_gup: 'LS',
-    kode_akun: '521213',
+    pok_account_id: defaultPokAccount?.id || '',
+    kode_akun: defaultPokAccount?.kodeAkun || '521213',
     sub_jenis: 'Honor Petugas Lapangan',
     nominal_bruto: 1500000,
     rekanan_type: 'toko',
@@ -45,11 +57,19 @@ export default function FormSPJPage() {
     catatan: ''
   });
 
-  // Uploaded docs mockup
+  // Uploaded real files metadata keyed by docName
   const [uploadedDocs, setUploadedDocs] = useState({});
+  const [previewDoc, setPreviewDoc] = useState(null);
 
-  // Current selected account
+  // Current selected account rules (14 MAK)
   const currentAccount = KODE_AKUN_LIST.find(a => a.kode === formData.kode_akun) || KODE_AKUN_LIST[0];
+
+  // Current selected POK Budget Account
+  const selectedPok = useMemo(() => {
+    return getAccountById(formData.pok_account_id) || null;
+  }, [formData.pok_account_id, getAccountById]);
+
+  const isOverBudget = selectedPok ? Number(formData.nominal_bruto) > selectedPok.sisaSetelahKomitmen : false;
 
   // Tax calculation result
   const taxResult = calculateTaxes({
@@ -72,27 +92,84 @@ export default function FormSPJPage() {
     }));
   };
 
-  const handleFileSimulate = (docName) => {
-    setUploadedDocs(prev => ({
+  const handleSelectPok = (pokId) => {
+    const found = pokAccounts.find(a => a.id === pokId);
+    if (!found) {
+      setFormData(prev => ({ ...prev, pok_account_id: '' }));
+      return;
+    }
+    const matchingMak = KODE_AKUN_LIST.find(k => k.kode === found.kodeAkun);
+    setFormData(prev => ({
       ...prev,
-      [docName]: {
-        fileName: `${docName.replace(/\s+/g, '_')}_${Date.now()}.pdf`,
-        uploadedAt: new Date().toLocaleTimeString()
-      }
+      pok_account_id: found.id,
+      kode_akun: matchingMak ? found.kodeAkun : prev.kode_akun,
+      tim_kerja: found.timKerja || prev.tim_kerja
     }));
   };
 
-  const handleSubmit = (targetStatus = 'Di PPK') => {
-    const pj = pegawaiList.find(p => p.nip_baru === formData.pj_kegiatan_nip) || currentUser;
+  // Unggah file asli ke IndexedDB Document Vault
+  const handleRealFileUpload = async (docName, e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
+    if (file.size > 25 * 1024 * 1024) {
+      alert('Ukuran file maksimal 25 MB per dokumen.');
+      return;
+    }
+
+    const fileId = `doc-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+    try {
+      await documentVault.saveFile(fileId, file);
+      setUploadedDocs(prev => ({
+        ...prev,
+        [docName]: {
+          docName,
+          fileId,
+          fileName: file.name,
+          fileSize: file.size,
+          fileType: file.type,
+          uploadedAt: new Date().toLocaleDateString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+        }
+      }));
+    } catch (err) {
+      alert('Gagal menyimpan berkas dokumen: ' + err.message);
+    }
+  };
+
+  const handleRemoveUploadedFile = async (docName) => {
+    const existing = uploadedDocs[docName];
+    if (existing?.fileId) {
+      await documentVault.deleteFile(existing.fileId);
+    }
+    setUploadedDocs(prev => {
+      const next = { ...prev };
+      delete next[docName];
+      return next;
+    });
+  };
+
+  const handleSubmit = (targetStatus = 'Di PPK') => {
+    if (targetStatus !== 'Draft' && isOverBudget) {
+      const confirmOver = window.confirm(
+        `PERINGATAN PAGU: Nilai pengajuan (Rp ${Number(formData.nominal_bruto).toLocaleString('id-ID')}) melebihi sisa pagu RKK SAKTI akun ${selectedPok?.kodeAkun} (Rp ${selectedPok?.sisaSetelahKomitmen?.toLocaleString('id-ID')}). Tetap lanjutkan?`
+      );
+      if (!confirmOver) return;
+    }
+
+    const pj = pegawaiList.find(p => p.nip_baru === formData.pj_kegiatan_nip) || currentUser;
     const isDirectDraft = targetStatus === 'Draft';
+    const uploadedCount = Object.keys(uploadedDocs).length;
+    const totalSyarat = currentAccount.syarat.length;
 
     const newTx = {
+      id: `spj-${Date.now()}`,
       no_pengajuan: `SPJ-${Date.now().toString().slice(-5)}`,
       no_spm_spp: `00${Math.floor(100 + Math.random() * 900)}A`,
+      pok_account_id: formData.pok_account_id || null,
+      pok_output_nama: selectedPok?.outputNama || '',
       kategori_belanja: currentAccount.kategori,
       kode_akun: formData.kode_akun,
-      uraian_kegiatan: formData.uraian_kegiatan.trim() || "Pengajuan SPJ Baru",
+      uraian_kegiatan: formData.uraian_kegiatan.trim() || (selectedPok ? `${selectedPok.outputNama} (${selectedPok.namaAkun})` : "Pengajuan SPJ Baru"),
       tim_kerja: formData.tim_kerja,
       
       // Delegated Drafting Identity
@@ -113,12 +190,13 @@ export default function FormSPJPage() {
         ? 'Meja PJ Kegiatan (Draf Pengajuan)' 
         : 'Meja PPK (Peninjauan Komitmen)',
       
-      kelengkapan_dokumen: Object.keys(uploadedDocs).length >= 3 ? 'LENGKAP' : 'BELUM LENGKAP',
+      kelengkapan_dokumen: uploadedCount >= Math.min(3, totalSyarat) ? 'LENGKAP' : 'BELUM LENGKAP',
+      uploaded_docs: uploadedDocs,
       tanggal_terima: new Date().toISOString().split('T')[0],
       tanggal_proses: isDirectDraft ? '' : new Date().toISOString().split('T')[0],
       tanggal_sp2d: '',
-      catatan_kekurangan: formData.catatan || (Object.keys(uploadedDocs).length < 3 ? 'Lampiran KAK dan Nota belum di-scan lengkap' : ''),
-      review_ppk: isDirectDraft ? 'Draf tersimpan' : 'Menunggu peninjauan komitmen PPK',
+      catatan_kekurangan: formData.catatan || (uploadedCount === 0 ? 'Berkas digital belum diunggah' : ''),
+      review_ppk: isDirectDraft ? 'Draf tersimpan' : 'Menunggu peninjauan komitmen & verifikasi dokumen digital oleh PPK',
       review_ppspm: 'Menunggu',
       review_bdh: 'Menunggu'
     };
@@ -128,7 +206,7 @@ export default function FormSPJPage() {
     if (!isDirectDraft) {
       addNotification({
         title: 'Pengajuan SPJ Baru di Meja PPK',
-        message: `Pengajuan SPJ baru No. ${newTx.no_pengajuan} ("${newTx.uraian_kegiatan}") telah diajukan ke Meja PPK untuk peninjauan komitmen.`,
+        message: `Pengajuan SPJ baru No. ${newTx.no_pengajuan} ("${newTx.uraian_kegiatan}") dengan ${uploadedCount} lampiran dokumen siap dicek PPK.`,
         type: 'info',
         category: 'disposisi',
         targetRole: ['ppk', 'superadmin'],
@@ -326,19 +404,71 @@ export default function FormSPJPage() {
         </div>
       )}
 
-      {/* Wizard Step 2: Pilih Kode Akun */}
+      {/* Wizard Step 2: Tarik Data Pagu POK (RKK SAKTI) & Pilih Kode Akun */}
       {step === 2 && (
         <div className="p-6 rounded-3xl bg-white border border-purple-100 shadow-sm space-y-5 animate-in fade-in">
           <div>
             <h2 className="text-base font-extrabold text-slate-900">
-              Langkah 2: Pilih Kode Akun Belanja (14 MAK Standar BPS)
+              Langkah 2: Pilih Sumber Mata Anggaran POK (RKK SAKTI) & Kode Akun
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              Pilih kode akun yang sesuai. Sistem otomatis menentukan syarat kelengkapan dan aturan pajak.
+              Tarik data pagu dari RKK SAKTI yang aktif agar sisa anggaran terpantau otomatis saat pengajuan dan realisasi RPD.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-96 overflow-y-auto pr-1">
+          {/* Koneksi Mata Anggaran POK RKK SAKTI */}
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-purple-50 to-indigo-50/70 border border-purple-200 space-y-3">
+            <label className="block text-xs font-extrabold text-purple-950 flex items-center gap-2">
+              <Layers className="w-4 h-4 text-purple-700" />
+              <span>Tarik Data Anggaran dari POK / RKK SAKTI (Tim Kerja {formData.tim_kerja})</span>
+            </label>
+
+            <select
+              value={formData.pok_account_id}
+              onChange={(e) => handleSelectPok(e.target.value)}
+              className="w-full px-3.5 py-2.5 bg-white border border-purple-300 rounded-xl text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-purple-500"
+            >
+              <option value="">-- Pilih Mata Anggaran Kegiatan dari RKK SAKTI --</option>
+              {pokAccounts.map(acc => (
+                <option key={acc.id} value={acc.id}>
+                  [Tim {acc.timKerja}] {acc.outputKode} • {acc.kodeAkun} — {acc.namaAkun} ({acc.outputNama}) | Sisa: Rp {acc.sisaSetelahKomitmen.toLocaleString('id-ID')}
+                </option>
+              ))}
+            </select>
+
+            {selectedPok && (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                <div className="p-3 bg-white rounded-xl border border-purple-100">
+                  <span className="text-[10px] text-slate-400 font-bold uppercase block">Pagu Revisi POK</span>
+                  <span className="font-mono font-extrabold text-sm text-slate-900">
+                    Rp {selectedPok.pagu.toLocaleString('id-ID')}
+                  </span>
+                </div>
+                <div className="p-3 bg-white rounded-xl border border-purple-100">
+                  <span className="text-[10px] text-slate-400 font-bold uppercase block">Terpakai & Antre SPJ</span>
+                  <span className="font-mono font-bold text-sm text-purple-800">
+                    Rp {(selectedPok.totalRealisasi + selectedPok.komitmenOnProgress).toLocaleString('id-ID')}
+                  </span>
+                </div>
+                <div className={`p-3 rounded-xl border ${
+                  selectedPok.sisaSetelahKomitmen > 0 ? 'bg-emerald-50 border-emerald-200' : 'bg-rose-50 border-rose-200'
+                }`}>
+                  <span className="text-[10px] text-slate-500 font-bold uppercase block">Sisa Pagu Bebas</span>
+                  <span className={`font-mono font-black text-sm ${
+                    selectedPok.sisaSetelahKomitmen > 0 ? 'text-emerald-800' : 'text-rose-700'
+                  }`}>
+                    Rp {selectedPok.sisaSetelahKomitmen.toLocaleString('id-ID')}
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="pt-1">
+            <h3 className="text-xs font-extrabold text-slate-700 mb-2">
+              Aturan Pajak & Syarat Kelengkapan Dokumen (14 MAK Standar BPS):
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-72 overflow-y-auto pr-1">
             {KODE_AKUN_LIST.map((akun) => {
               const isSelected = formData.kode_akun === akun.kode;
               return (
@@ -370,6 +500,7 @@ export default function FormSPJPage() {
                 </div>
               );
             })}
+            </div>
           </div>
 
           <div className="flex justify-between pt-4 border-t border-purple-50">
@@ -564,6 +695,18 @@ export default function FormSPJPage() {
             </div>
           </div>
 
+          {isOverBudget && selectedPok && (
+            <div className="p-4 rounded-2xl bg-red-50 border border-red-200 flex items-start gap-3 text-xs text-red-900">
+              <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-extrabold">Peringatan: Nominal Bruto Melebihi Sisa Pagu POK Bebas!</p>
+                <p className="mt-0.5 text-red-700 leading-relaxed">
+                  Nominal Bruto (<strong>Rp {Number(formData.nominal_bruto || 0).toLocaleString('id-ID')}</strong>) melebihi sisa anggaran tersedia pada rincian <strong>{selectedPok.uraian}</strong> (Sisa bebas: <strong>Rp {selectedPok.sisaSetelahKomitmen.toLocaleString('id-ID')}</strong>). Anda hanya dapat menyimpan sebagai <em>Draft</em> atau perlu penyesuaian nominal/revisi RPD terlebih dahulu.
+                </p>
+              </div>
+            </div>
+          )}
+
           <div className="flex justify-between pt-4 border-t border-purple-50">
             <button
               type="button"
@@ -592,52 +735,79 @@ export default function FormSPJPage() {
               Langkah 4: Checklist Kelengkapan Dokumen ({currentAccount.kode} - {currentAccount.nama})
             </h2>
             <p className="text-xs text-slate-500 mt-0.5">
-              Simulasi unggah dokumen digital sesuai standar file Kelengkapan SPJ BPS.
+              Unggah berkas dokumen asli (PDF, JPG, PNG, atau XLSX, maksimal 10MB per berkas) agar PPK & Bendahara dapat memeriksa langsung di dalam sistem.
             </p>
           </div>
 
           <div className="space-y-3">
             {currentAccount.syarat.map((doc, idx) => {
-              const isUploaded = Boolean(uploadedDocs[doc]);
+              const fileMeta = uploadedDocs[doc];
+              const isUploaded = Boolean(fileMeta);
               return (
                 <div
                   key={idx}
-                  className={`p-3.5 rounded-2xl border flex items-center justify-between gap-3 transition ${
+                  className={`p-3.5 rounded-2xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 transition ${
                     isUploaded 
                       ? 'bg-emerald-50/70 border-emerald-300' 
                       : 'bg-purple-50/20 border-purple-100 hover:border-purple-300'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs ${
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs shrink-0 ${
                       isUploaded ? 'bg-emerald-600 text-white' : 'bg-purple-200 text-purple-800'
                     }`}>
                       {isUploaded ? <CheckCircle2 className="w-5 h-5" /> : idx + 1}
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <p className="font-bold text-xs text-slate-800">{doc}</p>
                       {isUploaded ? (
-                        <p className="text-[10px] text-emerald-700 font-medium">
-                          Telah diunggah: {uploadedDocs[doc].fileName} ({uploadedDocs[doc].uploadedAt})
+                        <p className="text-[10px] text-emerald-700 font-medium truncate">
+                          Telah diunggah: <strong>{fileMeta.fileName}</strong> • {formatFileSize(fileMeta.fileSize)} ({fileMeta.uploadedAt})
                         </p>
                       ) : (
-                        <p className="text-[10px] text-slate-400">Format didukung: PDF, JPG, PNG (Maks 10MB)</p>
+                        <p className="text-[10px] text-slate-400">Format didukung: PDF, JPG, PNG, XLSX (Maks 10MB)</p>
                       )}
                     </div>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => handleFileSimulate(doc)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition ${
-                      isUploaded 
-                        ? 'bg-emerald-200 hover:bg-emerald-300 text-emerald-900' 
-                        : 'bg-purple-100 hover:bg-purple-200 text-purple-900'
-                    }`}
-                  >
-                    <UploadCloud className="w-3.5 h-3.5" />
-                    <span>{isUploaded ? 'Ganti File' : 'Unggah File'}</span>
-                  </button>
+                  <div className="flex items-center gap-2 shrink-0 self-end sm:self-center">
+                    {isUploaded && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => setPreviewDoc({ docName: doc, ...fileMeta })}
+                          className="px-3 py-1.5 rounded-xl bg-white border border-emerald-200 hover:bg-emerald-100 text-emerald-800 text-xs font-bold flex items-center gap-1.5 transition"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>Lihat</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveUploadedFile(doc)}
+                          title="Hapus file"
+                          className="p-1.5 rounded-xl bg-white border border-red-200 hover:bg-red-50 text-red-600 transition"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </>
+                    )}
+                    <label
+                      className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition cursor-pointer ${
+                        isUploaded 
+                          ? 'bg-emerald-200 hover:bg-emerald-300 text-emerald-900' 
+                          : 'bg-purple-100 hover:bg-purple-200 text-purple-900'
+                      }`}
+                    >
+                      <UploadCloud className="w-3.5 h-3.5" />
+                      <span>{isUploaded ? 'Ganti File' : 'Pilih & Unggah'}</span>
+                      <input
+                        type="file"
+                        accept=".pdf,image/*,.xlsx,.xls"
+                        className="hidden"
+                        onChange={(e) => handleRealFileUpload(doc, e)}
+                      />
+                    </label>
+                  </div>
                 </div>
               );
             })}
@@ -677,6 +847,13 @@ export default function FormSPJPage() {
           </div>
         </div>
       )}
+
+      {/* Preview Modal untuk dokumen yang diunggah */}
+      <DocumentViewerModal
+        isOpen={Boolean(previewDoc)}
+        onClose={() => setPreviewDoc(null)}
+        docInfo={previewDoc}
+      />
     </div>
   );
 }

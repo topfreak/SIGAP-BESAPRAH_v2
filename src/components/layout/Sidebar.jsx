@@ -57,6 +57,7 @@ export default function Sidebar() {
           badgeColor: "bg-amber-400 text-purple-950 font-bold"
         },
         { name: "Buat Pengajuan SPJ Baru", path: "/pengajuan-spj/baru", icon: FilePlus2 },
+        { name: "POK & RPD (SAKTI)", path: "/pok-rpd", icon: Coins },
         { 
           name: "Panduan Alur Pengajuan SPJ", 
           path: "/panduan-alur", 

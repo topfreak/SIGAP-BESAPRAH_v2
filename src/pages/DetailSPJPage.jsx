@@ -21,13 +21,17 @@ import {
   History,
   Send,
   RotateCcw,
-  UserCheck
+  UserCheck,
+  Eye,
+  UploadCloud
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNotification } from '../context/NotificationContext';
 import { KODE_AKUN_LIST } from '../lib/seedData';
 import { getDeskActionAuthority, DESK_CONFIG } from '../lib/permissions';
+import { formatFileSize } from '../lib/documentVault';
 import Badge from '../components/common/Badge';
+import DocumentViewerModal from '../components/common/DocumentViewerModal';
 
 export default function DetailSPJPage() {
   const { id } = useParams();
@@ -41,6 +45,26 @@ export default function DetailSPJPage() {
   const [reviewNote, setReviewNote] = useState('');
   const [successNotice, setSuccessNotice] = useState('');
   const [checkedDocs, setCheckedDocs] = useState({});
+  const [previewDoc, setPreviewDoc] = useState(null);
+  const [docVerifyMap, setDocVerifyMap] = useState(() => transaction?.doc_verify_status || {});
+
+  const canVerifyDocs = ['superadmin', 'ppk', 'bendahara', 'ppspm', 'kpa'].includes(currentUser?.role);
+
+  const handleVerifyDoc = (docName, status, reason = '') => {
+    const nextMap = { ...docVerifyMap, [docName]: { status, reason, verifiedBy: currentUser?.nama || 'Verifikator', verifiedAt: new Date().toLocaleDateString('id-ID') } };
+    setDocVerifyMap(nextMap);
+    if (status === 'sah') {
+      setCheckedDocs(prev => ({ ...prev, [docName]: true }));
+    } else if (status === 'ditolak') {
+      setCheckedDocs(prev => ({ ...prev, [docName]: false }));
+      if (reason) {
+        setReviewNote(prev => (prev ? `${prev}\n• Dokumen [${docName}] ditolak: ${reason}` : `Dokumen [${docName}] ditolak: ${reason}`));
+      }
+    }
+    if (updateTransactionStatus && transaction?.id) {
+      updateTransactionStatus(transaction.id, { doc_verify_status: nextMap });
+    }
+  };
 
   if (!transaction) {
     return (
@@ -586,29 +610,79 @@ export default function DetailSPJPage() {
 
         {/* Checklist Dokumen Standar */}
         <div className="p-6 rounded-3xl bg-white border border-purple-100 shadow-sm space-y-3">
-          <h3 className="text-sm font-bold text-slate-800 border-b border-purple-50 pb-2 flex items-center justify-between">
-            <span>Verifikasi Syarat Dokumen ({akun.kode})</span>
-            <span className="text-[10px] text-purple-700 font-semibold">{akun.nama}</span>
-          </h3>
+          <div className="border-b border-purple-50 pb-2.5 flex items-center justify-between gap-2">
+            <div>
+              <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+                <span>Verifikasi Syarat Dokumen ({akun.kode})</span>
+              </h3>
+              <p className="text-[10px] text-slate-500 mt-0.5">
+                Klik <strong className="text-purple-800">Buka / Cek</strong> pada dokumen terlampir untuk memeriksa berkas asli langsung di sistem.
+              </p>
+            </div>
+            <span className="text-[10px] text-purple-700 font-semibold text-right">{akun.nama}</span>
+          </div>
 
-          <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+          <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
             {akun.syarat.map((syarat, idx) => {
-              const isChecked = checkedDocs[syarat] || transaction.kelengkapan_dokumen === 'LENGKAP';
+              const uploadedMeta = transaction.uploaded_docs?.[syarat];
+              const verifyEntry = docVerifyMap[syarat];
+              const isChecked = verifyEntry?.status === 'sah' || checkedDocs[syarat] || transaction.kelengkapan_dokumen === 'LENGKAP';
+              const isRejected = verifyEntry?.status === 'ditolak';
+
               return (
-                <label
+                <div
                   key={idx}
-                  className="flex items-center justify-between p-2 rounded-xl hover:bg-purple-50/50 cursor-pointer text-xs"
+                  className={`flex items-center justify-between gap-2 p-2.5 rounded-xl border text-xs transition ${
+                    isRejected
+                      ? 'bg-red-50/70 border-red-200'
+                      : isChecked
+                        ? 'bg-emerald-50/50 border-emerald-200'
+                        : 'bg-slate-50/50 border-purple-50 hover:bg-purple-50/40'
+                  }`}
                 >
-                  <span className={`text-slate-700 ${isChecked ? 'font-semibold text-purple-950' : ''}`}>
-                    {idx + 1}. {syarat}
-                  </span>
-                  <input
-                    type="checkbox"
-                    checked={isChecked}
-                    onChange={() => toggleDoc(syarat)}
-                    className="rounded text-purple-600 focus:ring-purple-400"
-                  />
-                </label>
+                  <label className="flex items-start gap-2.5 cursor-pointer flex-1 min-w-0">
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={() => toggleDoc(syarat)}
+                      className="mt-0.5 rounded text-purple-600 focus:ring-purple-400 shrink-0"
+                    />
+                    <div className="min-w-0">
+                      <span className={`block leading-snug ${isRejected ? 'text-red-800 font-bold' : isChecked ? 'font-semibold text-purple-950' : 'text-slate-700'}`}>
+                        {idx + 1}. {syarat}
+                      </span>
+                      {uploadedMeta ? (
+                        <span className="inline-flex items-center gap-1 text-[10px] text-emerald-700 font-medium mt-0.5 truncate max-w-full">
+                          <UploadCloud className="w-3 h-3 shrink-0" />
+                          <span className="truncate">{uploadedMeta.fileName} ({formatFileSize(uploadedMeta.fileSize)})</span>
+                        </span>
+                      ) : (
+                        <span className="block text-[10px] text-slate-400 mt-0.5 italic">Belum ada file digital terlampir</span>
+                      )}
+                      {verifyEntry?.status === 'sah' && (
+                        <span className="inline-block ml-1 px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 text-[9px] font-bold">
+                          Sah PPK
+                        </span>
+                      )}
+                      {isRejected && (
+                        <span className="inline-block mt-0.5 px-1.5 py-0.5 rounded bg-red-100 text-red-700 text-[10px] font-bold">
+                          Ditolak: {verifyEntry.reason || 'Perlu perbaikan'}
+                        </span>
+                      )}
+                    </div>
+                  </label>
+
+                  {uploadedMeta && (
+                    <button
+                      type="button"
+                      onClick={() => setPreviewDoc({ docName: syarat, ...uploadedMeta })}
+                      className="px-2.5 py-1.5 rounded-xl bg-purple-100 hover:bg-purple-200 text-purple-900 font-bold text-[11px] flex items-center gap-1 shrink-0 transition"
+                    >
+                      <Eye className="w-3.5 h-3.5" />
+                      <span>Buka / Cek</span>
+                    </button>
+                  )}
+                </div>
               );
             })}
           </div>
@@ -652,6 +726,16 @@ export default function DetailSPJPage() {
           </div>
         )}
       </div>
+
+      {/* Modal Pemeriksaan Dokumen Digital untuk PPK / Bendahara / PPSPM */}
+      <DocumentViewerModal
+        isOpen={Boolean(previewDoc)}
+        onClose={() => setPreviewDoc(null)}
+        docInfo={previewDoc}
+        canVerify={canVerifyDocs}
+        verifyStatus={previewDoc ? docVerifyMap[previewDoc.docName]?.status : null}
+        onVerifyChange={handleVerifyDoc}
+      />
     </div>
   );
 }

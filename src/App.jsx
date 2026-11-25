@@ -24,6 +24,7 @@ import MasterPegawaiPage from './pages/MasterPegawaiPage';
 import MasterWilayahPage from './pages/MasterWilayahPage';
 import MasterAkunPage from './pages/MasterAkunPage';
 import PengaturanPage from './pages/PengaturanPage';
+import POKRPDPage from './pages/POKRPDPage';
 
 export default function App() {
   return (
@@ -41,6 +42,7 @@ export default function App() {
         <Route path="/pengajuan-spj" element={<DaftarSPJPage />} />
         <Route path="/pengajuan-spj/baru" element={<FormSPJPage />} />
         <Route path="/pengajuan-spj/:id" element={<DetailSPJPage />} />
+        <Route path="/pok-rpd" element={<POKRPDPage />} />
         <Route path="/panduan-alur" element={<PanduanAlurPage />} />
         <Route path="/panduan-akun" element={<PanduanAkunPage />} />
         <Route path="/kalkulator-pajak" element={<KalkulatorPajakPage />} />
